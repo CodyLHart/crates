@@ -1,7 +1,19 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const Record = (props) => (
+interface Employee {
+  _id?: string;
+  name: string;
+  position: string;
+  level: string;
+}
+
+interface RecordProps {
+  record: Employee;
+  deleteRecord: (id: string) => void;
+}
+
+const Record: React.FC<RecordProps> = (props) => (
   <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
     <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
       {props.record.name}
@@ -25,7 +37,7 @@ const Record = (props) => (
           color="red"
           type="button"
           onClick={() => {
-            props.deleteRecord(props.record._id);
+            props.deleteRecord(props.record._id!);
           }}
         >
           Delete
@@ -35,8 +47,8 @@ const Record = (props) => (
   </tr>
 );
 
-export default function RecordList() {
-  const [records, setRecords] = useState([]);
+const RecordList: React.FC = () => {
+  const [records, setRecords] = useState<Employee[]>([]);
 
   // This method fetches the records from the database.
   useEffect(() => {
@@ -55,7 +67,7 @@ export default function RecordList() {
   }, [records.length]);
 
   // This method will delete a record
-  async function deleteRecord(id) {
+  async function deleteRecord(id: string): Promise<void> {
     await fetch(`http://localhost:5050/record/${id}`, {
       method: "DELETE",
     });
@@ -69,7 +81,7 @@ export default function RecordList() {
       return (
         <Record
           record={record}
-          deleteRecord={() => deleteRecord(record._id)}
+          deleteRecord={() => deleteRecord(record._id!)}
           key={record._id}
         />
       );
@@ -105,4 +117,6 @@ export default function RecordList() {
       </div>
     </>
   );
-}
+};
+
+export default RecordList;

@@ -1,6 +1,7 @@
+import React from "react";
 import { NavLink } from "react-router-dom";
 
-export default function Navbar() {
+const Navbar: React.FC = () => {
   return (
     <div>
       <nav className="flex justify-between items-center mb-6">
@@ -21,4 +22,6 @@ export default function Navbar() {
       </nav>
     </div>
   );
-}
+};
+
+export default Navbar;
