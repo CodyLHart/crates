@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
 import Record from "./components/Record";
 import RecordList from "./components/RecordList";
+import DiscogsSearch from "./components/DiscogsSearch";
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -14,6 +15,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <RecordList />,
+      },
+      {
+        path: "/discogs",
+        element: <DiscogsSearch />,
       },
     ],
   },

@@ -13,12 +13,20 @@ const Navbar: React.FC = () => {
           ></img>
         </NavLink>
 
-        <NavLink
-          className="inline-flex items-center justify-center whitespace-nowrap text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-slate-100 h-9 rounded-md px-3"
-          to="/create"
-        >
-          Create Employee
-        </NavLink>
+        <div className="flex gap-3">
+          <NavLink
+            className="inline-flex items-center justify-center whitespace-nowrap text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-slate-100 h-9 rounded-md px-3"
+            to="/create"
+          >
+            Create Employee
+          </NavLink>
+          <NavLink
+            className="inline-flex items-center justify-center whitespace-nowrap text-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-blue-500 bg-blue-500 text-white hover:bg-blue-600 h-9 rounded-md px-3"
+            to="/discogs"
+          >
+            Discogs Search
+          </NavLink>
+        </div>
       </nav>
     </div>
   );
