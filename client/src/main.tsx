@@ -1,44 +1,50 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import { SpotifyAuthProvider } from "./contexts/SpotifyAuthProvider";
 import App from "./App";
-import Record from "./components/Record";
-import RecordList from "./components/RecordList";
+import MyCollection from "./components/MyCollection";
 import DiscogsSearch from "./components/DiscogsSearch";
+import AlbumDetail from "./components/AlbumDetail";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import VerifyEmail from "./components/VerifyEmail";
+import SpotifyCallback from "./components/SpotifyCallback";
 import "./index.css";
 
 const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Register />,
+  },
+  {
+    path: "/verify-email",
+    element: <VerifyEmail />,
+  },
+  {
+    path: "/spotify-callback",
+    element: <SpotifyCallback />,
+  },
   {
     path: "/",
     element: <App />,
     children: [
       {
         path: "/",
-        element: <RecordList />,
+        element: <MyCollection />,
       },
       {
         path: "/discogs",
         element: <DiscogsSearch />,
       },
-    ],
-  },
-  {
-    path: "/edit/:id",
-    element: <App />,
-    children: [
       {
-        path: "/edit/:id",
-        element: <Record />,
-      },
-    ],
-  },
-  {
-    path: "/create",
-    element: <App />,
-    children: [
-      {
-        path: "/create",
-        element: <Record />,
+        path: "/album/:albumId",
+        element: <AlbumDetail />,
       },
     ],
   },
@@ -49,6 +55,10 @@ if (!rootElement) throw new Error("Failed to find the root element");
 
 createRoot(rootElement).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <SpotifyAuthProvider>
+        <RouterProvider router={router} />
+      </SpotifyAuthProvider>
+    </AuthProvider>
   </React.StrictMode>
 );
