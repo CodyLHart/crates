@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider } from "./contexts/AuthProvider";
 import { SpotifyAuthProvider } from "./contexts/SpotifyAuthProvider";
 import App from "./App";
 import MyCollection from "./components/MyCollection";

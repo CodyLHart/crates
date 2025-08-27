@@ -1,46 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import SpotifyEnhancer from "./SpotifyEnhancer";
-
-interface Track {
-  position: string;
-  title: string;
-  duration?: string;
-  artists?: string[];
-  // Spotify audio features
-  spotifyId?: string;
-  bpm?: number;
-  key?: string;
-  mode?: string; // major/minor
-  energy?: number;
-  danceability?: number;
-  acousticness?: number;
-  instrumentalness?: number;
-  valence?: number; // happiness
-  tempo?: number; // alternative to BPM
-}
-
-interface Album {
-  _id?: string;
-  title: string;
-  artist: string;
-  year?: string;
-  thumb?: string;
-  discogsId: number;
-  addedAt: string;
-  genre?: string[];
-  style?: string[];
-  country?: string;
-  format?: string[];
-  label?: string;
-  catno?: string;
-  barcode?: string;
-  tracks?: Track[];
-  notes?: string;
-  masterId?: number;
-  status?: string;
-}
+import type { Album } from "../types";
 
 const AlbumDetail: React.FC = () => {
   const { albumId } = useParams<{ albumId: string }>();

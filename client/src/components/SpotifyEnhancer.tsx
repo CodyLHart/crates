@@ -1,44 +1,7 @@
 import React, { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useSpotifyAuth } from "../hooks/useSpotifyAuth";
-
-interface Track {
-  position: string;
-  title: string;
-  duration: string;
-  artists?: string[];
-  spotifyId?: string;
-  bpm?: number;
-  key?: number;
-  mode?: string;
-  energy?: number;
-  danceability?: number;
-  acousticness?: number;
-  instrumentalness?: number;
-  valence?: number;
-  tempo?: number;
-}
-
-interface Album {
-  _id?: string;
-  title: string;
-  artist: string;
-  year?: string;
-  thumb?: string;
-  discogsId: number;
-  addedAt: string;
-  genre?: string[];
-  style?: string[];
-  country?: string;
-  format?: string[];
-  label?: string;
-  catno?: string;
-  barcode?: string;
-  tracks?: Track[];
-  notes?: string;
-  masterId?: number;
-  status?: string;
-}
+import type { Album, Track } from "../types";
 
 interface SpotifyEnhancerProps {
   album: Album;
