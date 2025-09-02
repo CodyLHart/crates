@@ -21,8 +21,8 @@ const Footer: React.FC = () => {
               <a
                 href="https://getsongbpm.com"
                 target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                rel="noopener"
+                className="text-blue-600 hover:text-blue-800 font-semibold transition-colors underline"
               >
                 GetSongBPM
               </a>

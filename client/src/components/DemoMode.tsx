@@ -42,7 +42,7 @@ const DemoMode: React.FC = () => {
                 <li>• Tailwind CSS for styling</li>
                 <li>• Node.js + Express backend</li>
                 <li>• MongoDB database</li>
-                <li>• Spotify, Discogs, GetSongBPM APIs</li>
+                <li>• Spotify, Discogs, <a href="https://getsongbpm.com" target="_blank" rel="noopener" className="font-semibold underline text-green-900">GetSongBPM</a> APIs</li>
               </ul>
             </div>
           </div>
@@ -109,8 +109,8 @@ const DemoMode: React.FC = () => {
                 <a 
                   href="https://getsongbpm.com" 
                   target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  rel="noopener"
+                  className="text-blue-600 hover:text-blue-800 text-sm font-semibold underline"
                 >
                   Powered by GetSongBPM
                 </a>
