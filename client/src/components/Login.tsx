@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import Footer from "./Footer";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -38,8 +39,9 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center">
             <div className="flex items-center gap-2">
@@ -154,7 +156,9 @@ const Login: React.FC = () => {
             </button>
           </div>
         </form>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 };
