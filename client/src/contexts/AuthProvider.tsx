@@ -1,5 +1,6 @@
 import React, { useState, useEffect, type ReactNode } from "react";
 import { AuthContext } from "./AuthContext";
+import { config, isBackendAvailable } from "../config/api";
 
 interface User {
   _id: string;
@@ -29,7 +30,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const verifyToken = async (token: string) => {
-    const response = await fetch("http://localhost:5050/auth/verify", {
+    if (!isBackendAvailable()) {
+      setLoading(false);
+      return;
+    }
+
+    const response = await fetch(config.endpoints.auth.verify, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -46,7 +52,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await fetch("http://localhost:5050/auth/login", {
+    if (!isBackendAvailable()) {
+      throw new Error("Backend service is not available. Please check your connection.");
+    }
+
+    const response = await fetch(config.endpoints.auth.login, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -70,7 +80,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     username: string,
     password: string
   ) => {
-    const response = await fetch("http://localhost:5050/auth/register", {
+    if (!isBackendAvailable()) {
+      throw new Error("Backend service is not available. Please check your connection.");
+    }
+
+    const response = await fetch(config.endpoints.auth.register, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -93,7 +107,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const verifyEmail = async (token: string) => {
-    const response = await fetch("http://localhost:5050/auth/verify-email", {
+    if (!isBackendAvailable()) {
+      throw new Error("Backend service is not available. Please check your connection.");
+    }
+
+    const response = await fetch(config.endpoints.auth.verifyEmail, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

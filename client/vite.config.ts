@@ -10,4 +10,8 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
   },
+  define: {
+    // Set default API URL for production if not provided
+    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('http://localhost:5050'),
+  },
 });
