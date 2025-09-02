@@ -17,6 +17,19 @@ const DemoMode: React.FC = () => {
             <p className="text-lg text-gray-600 mb-6">
               Welcome to Crates! This is a demo version showcasing the music collection manager.
             </p>
+            <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-4 mb-6">
+              <p className="text-blue-900 text-center font-semibold">
+                <strong>Music data powered by </strong>
+                <a 
+                  href="https://getsongbpm.com" 
+                  target="_blank" 
+                  rel="noopener"
+                  className="font-bold text-blue-900 underline hover:text-blue-700 text-xl"
+                >
+                  GetSongBPM.com
+                </a>
+              </p>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 mb-8">
