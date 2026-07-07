@@ -268,27 +268,6 @@ Before asking Codex to scaffold the app:
 
 ---
 
-# First Codex Task
-
-Once setup documentation is committed, the first Codex task should be:
-
-```text
-Read PRODUCT_BIBLE.md and every file in docs/.
-
-Do not write code yet.
-
-Summarize:
-1. What Crates is
-2. The core domain model
-3. The technical architecture
-4. The initial implementation milestone
-5. Any questions or risks before scaffolding
-
-Wait for approval before making changes.
-```
-
----
-
 # First Implementation Task
 
 After Codex summarizes the project and the approach is approved, the first implementation task should be:
