@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+
+# Native builds
+android/
+ios/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/settings.json
+
+# Testing
+coverage/
+
+# Build output
+dist/
+web-build/
+
+# Misc
+*.tmp
+*.swp
