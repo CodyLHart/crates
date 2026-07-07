@@ -309,6 +309,10 @@ Discogs remains the authoritative source for Release information.
 
 Crates extends Discogs data with user-generated content and a modern user experience.
 
+Discogs is authoritative for Discogs-sourced release metadata.
+
+Crates is authoritative for user-owned Copies, Journals, Crates, Tags, ratings, condition, listening history, custom overrides, and custom/unlinked items.
+
 ---
 
 # Offline First

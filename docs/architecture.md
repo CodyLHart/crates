@@ -542,7 +542,7 @@ Before implementing a major feature, Codex should:
 1. Read `PRODUCT_BIBLE.md`.
 2. Read `docs/glossary.md`.
 3. Read `docs/product-requirements.md`.
-4. Read `docs/core-experiences.md` if present.
+4. Read `docs/ux/core-experiences.md` if present.
 5. Read this architecture document.
 6. Summarize the intended approach.
 7. Ask clarifying questions if requirements conflict or are incomplete.

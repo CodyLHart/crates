@@ -110,6 +110,16 @@ A Copy may reference a Release, but it does not have to.
 
 This allows Crates to support independent releases, test pressings, bootlegs, demos, and other items that may not exist in Discogs.
 
+### MVP Clarification
+
+The MVP supports **custom/unlinked Copies**, not full custom Releases.
+
+If a physical item cannot be found in Discogs, the user may still create a Copy using Copy-level override fields (such as title, artist, artwork, and year).
+
+The database architecture must allow these Copies to exist without a linked Release.
+
+Full creation and editing of reusable custom Releases is intentionally deferred until a future release.
+
 ---
 
 ## Discogs is a provider, not the source of truth

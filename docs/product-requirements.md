@@ -76,6 +76,23 @@ Version 1.0 is considered successful if a user can:
 
 The MVP intentionally focuses on making everyday interaction with a collection significantly more enjoyable than existing alternatives.
 
+### Discogs Integration Scope
+
+For the MVP, Discogs integration is focused on helping users populate and maintain their Crates collection.
+
+Required:
+
+- Search Discogs releases
+- Import one or more records from a connected Discogs collection
+
+Deferred until after the initial MVP:
+
+- Continuous two-way synchronization
+- Full synchronization of every Discogs field
+- Marketplace functionality
+- Wantlist synchronization
+- Advanced collection management features
+
 ---
 
 # 3. Product Hypothesis
