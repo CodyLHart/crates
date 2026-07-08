@@ -301,6 +301,15 @@ After scaffolding:
 - Summarize what changed
 ```
 
+Milestone 2 may add the app shell with local demo data only:
+
+- Bottom tab navigation
+- Copy detail route
+- Local mock Copies, Releases, Crates, Tags, and Journal Entries
+- Reusable UI components
+
+Do not add Supabase, SQLite, Discogs, authentication, sync, or persistence during Milestone 2.
+
 ---
 
 # Notes

@@ -1,6 +1,5 @@
-import { placeholderRoutes } from "@/constants/placeholders";
-import { PlaceholderRouteScreen } from "@/features/app-shell/screens/PlaceholderRouteScreen";
+import { HomeScreen } from "@/features/app-shell/screens/HomeScreen";
 
 export default function HomeRoute() {
-  return <PlaceholderRouteScreen route={placeholderRoutes.home} />;
+  return <HomeScreen />;
 }

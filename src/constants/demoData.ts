@@ -1,0 +1,291 @@
+export type ArtworkSwatch = {
+  backgroundColor: string;
+  accentColor: string;
+  initials: string;
+};
+
+export type Release = {
+  id: string;
+  title: string;
+  primaryArtistName: string;
+  year: number;
+  label: string;
+  format: string;
+  genre: string;
+  artwork: ArtworkSwatch;
+};
+
+export type Copy = {
+  id: string;
+  releaseId: string;
+  condition: string;
+  rating: number;
+  acquiredFrom: string;
+  acquiredAt: string;
+  personalNote: string;
+  crateIds: string[];
+  tagIds: string[];
+  lastPlayedAt: string;
+};
+
+export type Crate = {
+  id: string;
+  name: string;
+  description: string;
+  copyIds: string[];
+};
+
+export type Tag = {
+  id: string;
+  name: string;
+};
+
+export type JournalEntry = {
+  id: string;
+  copyId: string;
+  type: "Memory" | "Note" | "Listening Event" | "Purchase";
+  title: string;
+  body: string;
+  date: string;
+};
+
+export type CopyWithRelease = Copy & {
+  release: Release;
+  crates: Crate[];
+  tags: Tag[];
+  journalEntries: JournalEntry[];
+};
+
+export const releases: Release[] = [
+  {
+    id: "release-blue-train",
+    title: "Blue Train",
+    primaryArtistName: "John Coltrane",
+    year: 1958,
+    label: "Blue Note",
+    format: "LP",
+    genre: "Jazz",
+    artwork: {
+      backgroundColor: "#233a4d",
+      accentColor: "#9fc4df",
+      initials: "BT",
+    },
+  },
+  {
+    id: "release-hounds-of-love",
+    title: "Hounds of Love",
+    primaryArtistName: "Kate Bush",
+    year: 1985,
+    label: "EMI",
+    format: "LP",
+    genre: "Art Pop",
+    artwork: {
+      backgroundColor: "#6f5368",
+      accentColor: "#e6c1ce",
+      initials: "HL",
+    },
+  },
+  {
+    id: "release-songs-in-the-key-of-life",
+    title: "Songs in the Key of Life",
+    primaryArtistName: "Stevie Wonder",
+    year: 1976,
+    label: "Tamla",
+    format: "2xLP",
+    genre: "Soul",
+    artwork: {
+      backgroundColor: "#8b5f32",
+      accentColor: "#f0c477",
+      initials: "SK",
+    },
+  },
+  {
+    id: "release-music-has-the-right",
+    title: "Music Has the Right to Children",
+    primaryArtistName: "Boards of Canada",
+    year: 1998,
+    label: "Warp",
+    format: "LP",
+    genre: "Electronic",
+    artwork: {
+      backgroundColor: "#625f4c",
+      accentColor: "#d5d0a2",
+      initials: "MH",
+    },
+  },
+  {
+    id: "release-sign-o-the-times",
+    title: "Sign o' the Times",
+    primaryArtistName: "Prince",
+    year: 1987,
+    label: "Paisley Park",
+    format: "2xLP",
+    genre: "Funk",
+    artwork: {
+      backgroundColor: "#7b3d31",
+      accentColor: "#e1ab74",
+      initials: "ST",
+    },
+  },
+];
+
+export const tags: Tag[] = [
+  { id: "tag-favorite", name: "Favorite" },
+  { id: "tag-late-night", name: "Late Night" },
+  { id: "tag-sample-source", name: "Sample Source" },
+  { id: "tag-needs-cleaning", name: "Needs Cleaning" },
+  { id: "tag-gift", name: "Gift" },
+];
+
+export const crates: Crate[] = [
+  {
+    id: "crate-sunday-morning",
+    name: "Sunday Morning",
+    description: "Warm, open records for slow starts and coffee.",
+    copyIds: ["copy-blue-train", "copy-songs-key-life"],
+  },
+  {
+    id: "crate-late-night",
+    name: "Late Night Room",
+    description: "Dim lights, longer sides, and records that reward attention.",
+    copyIds: ["copy-hounds-love", "copy-music-right-children"],
+  },
+  {
+    id: "crate-floor-fillers",
+    name: "Floor Fillers",
+    description: "Copies that make the room move without asking twice.",
+    copyIds: ["copy-sign-times", "copy-songs-key-life"],
+  },
+];
+
+export const copies: Copy[] = [
+  {
+    id: "copy-blue-train",
+    releaseId: "release-blue-train",
+    condition: "VG+",
+    rating: 5,
+    acquiredFrom: "A basement shop in Denver",
+    acquiredAt: "2024-04-18",
+    personalNote: "The copy that made the jazz shelf feel real.",
+    crateIds: ["crate-sunday-morning"],
+    tagIds: ["tag-favorite"],
+    lastPlayedAt: "2026-06-28",
+  },
+  {
+    id: "copy-hounds-love",
+    releaseId: "release-hounds-of-love",
+    condition: "NM",
+    rating: 5,
+    acquiredFrom: "Gift from Mara",
+    acquiredAt: "2023-11-02",
+    personalNote: "Still feels cinematic every time the needle drops.",
+    crateIds: ["crate-late-night"],
+    tagIds: ["tag-favorite", "tag-gift"],
+    lastPlayedAt: "2026-07-01",
+  },
+  {
+    id: "copy-songs-key-life",
+    releaseId: "release-songs-in-the-key-of-life",
+    condition: "VG",
+    rating: 5,
+    acquiredFrom: "Estate sale",
+    acquiredAt: "2022-08-14",
+    personalNote: "Sleeve is worn, records are alive.",
+    crateIds: ["crate-sunday-morning", "crate-floor-fillers"],
+    tagIds: ["tag-sample-source"],
+    lastPlayedAt: "2026-06-15",
+  },
+  {
+    id: "copy-music-right-children",
+    releaseId: "release-music-has-the-right",
+    condition: "VG+",
+    rating: 4,
+    acquiredFrom: "Online trade",
+    acquiredAt: "2025-02-09",
+    personalNote: "Best after midnight, never as background music.",
+    crateIds: ["crate-late-night"],
+    tagIds: ["tag-late-night"],
+    lastPlayedAt: "2026-05-26",
+  },
+  {
+    id: "copy-sign-times",
+    releaseId: "release-sign-o-the-times",
+    condition: "VG+",
+    rating: 5,
+    acquiredFrom: "Record fair",
+    acquiredAt: "2024-09-21",
+    personalNote: "A little surface noise, somehow part of the charm.",
+    crateIds: ["crate-floor-fillers"],
+    tagIds: ["tag-needs-cleaning"],
+    lastPlayedAt: "2026-07-04",
+  },
+];
+
+export const journalEntries: JournalEntry[] = [
+  {
+    id: "journal-hounds-love-memory",
+    copyId: "copy-hounds-love",
+    type: "Memory",
+    title: "Rainy drive home",
+    body: "Bought on the first cold night of the season and played before it even made the shelf.",
+    date: "2026-07-02",
+  },
+  {
+    id: "journal-sign-times-listen",
+    copyId: "copy-sign-times",
+    type: "Listening Event",
+    title: "Side C still wins",
+    body: "Pulled this for friends and forgot how quickly the second disc takes over the room.",
+    date: "2026-07-04",
+  },
+  {
+    id: "journal-blue-train-note",
+    copyId: "copy-blue-train",
+    type: "Note",
+    title: "Clean before next play",
+    body: "Sounds beautiful, but the first track has a little dust in the quiet passages.",
+    date: "2026-06-29",
+  },
+  {
+    id: "journal-songs-purchase",
+    copyId: "copy-songs-key-life",
+    type: "Purchase",
+    title: "Found in a kitchen box",
+    body: "The seller almost kept it. Glad they did not.",
+    date: "2022-08-14",
+  },
+];
+
+export function getCopyWithRelease(copyId: string): CopyWithRelease | undefined {
+  const copy = copies.find((item) => item.id === copyId);
+
+  if (!copy) {
+    return undefined;
+  }
+
+  const release = releases.find((item) => item.id === copy.releaseId);
+
+  if (!release) {
+    return undefined;
+  }
+
+  return {
+    ...copy,
+    release,
+    crates: crates.filter((crate) => copy.crateIds.includes(crate.id)),
+    tags: tags.filter((tag) => copy.tagIds.includes(tag.id)),
+    journalEntries: journalEntries.filter((entry) => entry.copyId === copy.id),
+  };
+}
+
+export const demoCopies = copies
+  .map((copy) => getCopyWithRelease(copy.id))
+  .filter((copy): copy is CopyWithRelease => Boolean(copy));
+
+export const recentJournalEntries = journalEntries
+  .map((entry) => ({
+    ...entry,
+    copy: getCopyWithRelease(entry.copyId),
+  }))
+  .filter((entry): entry is JournalEntry & { copy: CopyWithRelease } => Boolean(entry.copy))
+  .sort((a, b) => b.date.localeCompare(a.date));

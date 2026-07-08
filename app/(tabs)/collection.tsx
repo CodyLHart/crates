@@ -1,6 +1,5 @@
-import { placeholderRoutes } from "@/constants/placeholders";
-import { PlaceholderRouteScreen } from "@/features/app-shell/screens/PlaceholderRouteScreen";
+import { CollectionScreen } from "@/features/app-shell/screens/CollectionScreen";
 
 export default function CollectionRoute() {
-  return <PlaceholderRouteScreen route={placeholderRoutes.collection} />;
+  return <CollectionScreen />;
 }

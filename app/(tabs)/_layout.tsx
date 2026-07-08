@@ -1,22 +1,73 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+
+import { colors, typography } from "@/design/tokens";
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#9e5f45",
-        tabBarInactiveTintColor: "#5f6f52",
+        tabBarActiveTintColor: colors.ember,
+        tabBarInactiveTintColor: colors.inkMuted,
+        tabBarLabelStyle: {
+          ...typography.caption,
+          fontSize: 11,
+        },
         tabBarStyle: {
-          backgroundColor: "#fbf7ef",
-          borderTopColor: "rgba(20, 17, 15, 0.12)",
+          backgroundColor: colors.nightSoft,
+          borderTopColor: colors.border,
+          height: 82,
+          paddingBottom: 18,
+          paddingTop: 8,
         },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: "Home" }} />
-      <Tabs.Screen name="collection" options={{ title: "Collection" }} />
-      <Tabs.Screen name="crates" options={{ title: "Crates" }} />
-      <Tabs.Screen name="journal" options={{ title: "Journal" }} />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons color={color} name="home-outline" size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="collection"
+        options={{
+          title: "Collection",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons color={color} name="albums-outline" size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="crates"
+        options={{
+          title: "Crates",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons color={color} name="cube-outline" size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="journal"
+        options={{
+          title: "Journal",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons color={color} name="book-outline" size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons color={color} name="settings-outline" size={size} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

@@ -1,6 +1,5 @@
-import { placeholderRoutes } from "@/constants/placeholders";
-import { PlaceholderRouteScreen } from "@/features/app-shell/screens/PlaceholderRouteScreen";
+import { JournalScreen } from "@/features/app-shell/screens/JournalScreen";
 
 export default function JournalRoute() {
-  return <PlaceholderRouteScreen route={placeholderRoutes.journal} />;
+  return <JournalScreen />;
 }

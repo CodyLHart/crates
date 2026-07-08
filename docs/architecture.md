@@ -53,6 +53,14 @@ React Native / Expo App
               └── Release metadata and collection sync
 ```
 
+## Current Milestone Implementation
+
+Milestone 2 uses local mock data only to validate the app shell and navigation experience.
+
+The current runtime data source is `src/constants/demoData.ts`, which defines demo Copies, Releases, Crates, Tags, and Journal Entries. This is not persistence and should be replaced by SQLite-backed data access in a later milestone.
+
+Supabase, SQLite, Discogs, authentication, sync, and product persistence remain deferred.
+
 ---
 
 # Core Technology Choices

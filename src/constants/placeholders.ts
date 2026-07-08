@@ -6,53 +6,56 @@ export type PlaceholderRoute = {
 
 export const placeholderRoutes = {
   auth: {
-    title: "Auth",
-    eyebrow: "Milestone 2",
-    description: "Authentication screens will live here after the app foundation is stable.",
+    title: "Your collection stays private.",
+    eyebrow: "Deferred",
+    description:
+      "Authentication will arrive later; this shell currently uses local demo data only.",
   },
   home: {
     title: "Home",
     eyebrow: "App Shell",
-    description: "A future home for collection moments, recent activity, and rediscovery prompts.",
+    description:
+      "Collection moments, recent activity, and rediscovery prompts now begin from local demo data.",
   },
   collection: {
     title: "Collection",
     eyebrow: "Copies",
-    description: "The copy-centric collection browser will be implemented in a later milestone.",
+    description: "A copy-centric browser keeps ownership details close to the artwork.",
   },
   crates: {
     title: "Crates",
     eyebrow: "Organization",
-    description: "Custom groupings of Copies will appear here once product features begin.",
+    description: "Custom groupings show how Copies can belong to more than one listening context.",
   },
   journal: {
     title: "Journal",
     eyebrow: "Remember",
-    description: "Copy journals and listening history are intentionally deferred for now.",
+    description: "Copy journals preview memories, notes, purchases, and listening events.",
   },
   settings: {
     title: "Settings",
     eyebrow: "Preferences",
-    description: "Account, provider, and app preferences will be introduced in later milestones.",
+    description:
+      "Account, provider, and app preferences remain deferred while the shell stays local.",
   },
   copy: {
     title: "Copy Detail",
-    eyebrow: "Route Placeholder",
-    description: "This route is reserved for a single user-owned physical Copy.",
+    eyebrow: "Ownership",
+    description: "This route centers one user-owned physical Copy and its personal context.",
   },
   crate: {
     title: "Crate Detail",
-    eyebrow: "Route Placeholder",
-    description: "This route is reserved for an individual Crate of Copies.",
+    eyebrow: "Organization",
+    description: "This route will eventually open one Crate and the Copies gathered inside it.",
   },
   artist: {
     title: "Artist Detail",
-    eyebrow: "Route Placeholder",
-    description: "This route is reserved for artists represented in the user's collection.",
+    eyebrow: "Collection",
+    description: "This route will collect artists represented by user-owned Copies.",
   },
   track: {
     title: "Track Detail",
-    eyebrow: "Route Placeholder",
-    description: "This route is reserved for track-level context and future notes.",
+    eyebrow: "Listening",
+    description: "This route will hold future track-level context, notes, and listening details.",
   },
 } satisfies Record<string, PlaceholderRoute>;

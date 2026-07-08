@@ -1,6 +1,10 @@
-import { placeholderRoutes } from "@/constants/placeholders";
-import { PlaceholderRouteScreen } from "@/features/app-shell/screens/PlaceholderRouteScreen";
+import { useLocalSearchParams } from "expo-router";
+
+import { getCopyWithRelease } from "@/constants/demoData";
+import { CopyDetailScreen } from "@/features/app-shell/screens/CopyDetailScreen";
 
 export default function CopyDetailRoute() {
-  return <PlaceholderRouteScreen route={placeholderRoutes.copy} />;
+  const { id } = useLocalSearchParams<{ id: string }>();
+
+  return <CopyDetailScreen copy={getCopyWithRelease(id)} />;
 }

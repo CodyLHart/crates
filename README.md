@@ -26,6 +26,14 @@ Milestone 1 has been scaffolded:
 - Initial app and `src/` folder structure
 - Minimal placeholder screens
 
+Milestone 2 adds the local demo app shell:
+
+- Bottom tabs for Home, Collection, Crates, Journal, and Settings
+- Copy detail route
+- Local mock Copies, Releases, Crates, Tags, and Journal Entries
+- Reusable app-shell UI components
+- Dark-first, artwork-forward placeholder experience
+
 Supabase, SQLite, Discogs, authentication, sync, and product features are intentionally deferred to later milestones.
 
 ---
