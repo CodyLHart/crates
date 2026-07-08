@@ -91,14 +91,18 @@ Rationale:
 
 Use:
 
-- NativeWind
+- React Native `StyleSheet`
+- Design tokens in `src/design/`
 - Custom reusable components
 
 Rationale:
 
-- NativeWind allows fast UI iteration.
+- `StyleSheet` avoids Metro/runtime styling compatibility risk during the initial Expo SDK 57 scaffold.
+- Design tokens keep color, spacing, typography, and radius choices consistent without introducing styling infrastructure.
 - Custom components give Crates its own visual identity.
 - A full component library may make the app feel generic.
+
+NativeWind is deferred until the Expo SDK compatibility surface is stable enough to re-evaluate.
 
 Avoid introducing a large UI component library unless a specific need emerges.
 
@@ -573,7 +577,7 @@ Do not introduce:
 - Expo app
 - TypeScript
 - Expo Router
-- NativeWind
+- React Native `StyleSheet` and design tokens
 - ESLint
 - Prettier
 - Testing setup

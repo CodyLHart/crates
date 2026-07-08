@@ -10,9 +10,23 @@ The app begins as a vinyl-first experience while remaining architecturally open 
 
 # Project Status
 
-Crates is in early product and technical planning.
+Crates is in early implementation.
 
-No application code has been scaffolded yet.
+Milestone 1 has been scaffolded:
+
+- Expo
+- React Native
+- TypeScript
+- Expo Router
+- React Native `StyleSheet` and design tokens
+- ESLint
+- Prettier
+- Jest
+- React Native Testing Library
+- Initial app and `src/` folder structure
+- Minimal placeholder screens
+
+Supabase, SQLite, Discogs, authentication, sync, and product features are intentionally deferred to later milestones.
 
 ---
 
@@ -34,13 +48,64 @@ Start here:
 # Current Stack Direction
 
 - React Native
-- Expo
+- Expo SDK 54
 - TypeScript
 - Expo Router
-- NativeWind
+- React Native `StyleSheet` and design tokens
 - SQLite
 - Supabase
 - Discogs API
+
+---
+
+# Local Development
+
+Install dependencies:
+
+```bash
+pnpm install
+```
+
+Start the Expo development server:
+
+```bash
+pnpm start
+```
+
+The project is pinned to Expo SDK 54 because Expo's current App Store Expo Go release supports SDK 54. Defer newer Expo SDK upgrades until App Store Expo Go supports them on physical iPhones.
+
+Run on iOS:
+
+```bash
+pnpm ios
+```
+
+Run on Android:
+
+```bash
+pnpm android
+```
+
+Run on web:
+
+```bash
+pnpm web
+```
+
+Run checks:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm format
+```
+
+Apply formatting:
+
+```bash
+pnpm format:write
+```
 
 ---
 

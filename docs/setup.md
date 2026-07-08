@@ -190,15 +190,19 @@ Codex should scaffold the Expo app.
 
 Expected stack:
 
-- Expo
+- Expo SDK 54
 - React Native
 - TypeScript
 - Expo Router
-- NativeWind
+- React Native `StyleSheet` and design tokens
 - Jest
 - React Native Testing Library
 - ESLint
 - Prettier
+
+The app is pinned to Expo SDK 54 for Milestone 1 because the current App Store Expo Go release supports SDK 54. Defer newer Expo SDK upgrades until App Store Expo Go supports them on physical iPhones.
+
+Use the standard Expo start commands for local development. Offline Expo startup is deferred unless it is revalidated against the pinned SDK.
 
 ## Manual Steps
 
@@ -218,7 +222,7 @@ Codex may configure:
 - Expo app scaffold
 - TypeScript
 - Expo Router
-- NativeWind
+- React Native `StyleSheet` and design tokens
 - ESLint
 - Prettier
 - Jest
@@ -280,7 +284,7 @@ Implement Milestone 1 only:
 - React Native
 - TypeScript
 - Expo Router
-- NativeWind
+- React Native `StyleSheet` and design tokens
 - ESLint
 - Prettier
 - Jest
