@@ -11,6 +11,8 @@ type CopyRowProps = {
 };
 
 export function CopyRow({ copy }: CopyRowProps) {
+  const releaseYear = copy.release.year ? `${copy.release.year} · ` : "";
+
   return (
     <Link href={`/copy/${copy.id}`} asChild>
       <Pressable style={styles.row}>
@@ -21,7 +23,8 @@ export function CopyRow({ copy }: CopyRowProps) {
           <View style={styles.metaRow}>
             <TagPill label={copy.condition} tone="warm" />
             <Text style={styles.meta}>
-              {copy.release.year} · {copy.release.format}
+              {releaseYear}
+              {copy.release.format}
             </Text>
           </View>
         </View>

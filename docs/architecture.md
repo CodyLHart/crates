@@ -63,7 +63,9 @@ Supabase, Discogs, authentication, sync, and product persistence remain deferred
 
 Milestone 3 refines only the Collection and Copy Detail presentation. It keeps `src/constants/demoData.ts` as the data source while making browsing more artwork-first, adding concise Copy metadata, and using small React Native entrance animations for context.
 
-Milestone 4 introduces the SQLite foundation. `src/constants/demoData.ts` now acts as seed input only; screens read through async repository functions in `src/db/`, which initialize Expo SQLite, run migrations, seed the demo Collection, and return hydrated domain objects. Supabase, Discogs, authentication, sync, and record creation/editing remain deferred.
+Milestone 4 introduces the SQLite foundation. `src/constants/demoData.ts` now acts as seed input only; screens read through async repository functions in `src/db/`, which initialize Expo SQLite, run migrations, seed the demo Collection, and return hydrated domain objects. Supabase, Discogs, authentication, sync, and editing remain deferred.
+
+Milestone 5 adds local custom Copy creation. The Add Copy flow writes directly to SQLite through `src/db/repositories.ts`, supports unlinked Copies with nullable `release_id` and Copy-level title/artist/year overrides, and can attach existing Tags, Crates, and an initial Journal Entry. Discogs lookup, Supabase, authentication, sync, image upload, and editing remain deferred.
 
 ---
 

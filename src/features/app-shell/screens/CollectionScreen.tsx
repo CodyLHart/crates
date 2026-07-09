@@ -1,3 +1,5 @@
+import { Link, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { AnimatedAppear } from "@/components/AnimatedAppear";
@@ -11,6 +13,14 @@ import { colors, spacing, typography } from "@/design/tokens";
 import { useAsyncData } from "@/hooks/useAsyncData";
 
 export function CollectionScreen() {
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setRefreshKey((current) => current + 1);
+    }, []),
+  );
+
   const { data, error, isLoading } = useAsyncData(async () => {
     const [copies, crateGroups] = await Promise.all([listCopies(), listCratesWithCopies()]);
 
@@ -18,7 +28,7 @@ export function CollectionScreen() {
       copies,
       crateCount: crateGroups.length,
     };
-  }, []);
+  }, [refreshKey]);
 
   const copies = data?.copies ?? [];
   const featuredCopy = copies[2] ?? copies[0];
@@ -34,6 +44,9 @@ export function CollectionScreen() {
           Covers lead the scroll, while Copy details stay close enough to guide what gets played
           next.
         </Text>
+        <Link href="/copy/new" style={styles.addLink}>
+          Add Copy
+        </Link>
       </AnimatedAppear>
 
       {isLoading ? (
@@ -103,6 +116,17 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.creamMuted,
     marginTop: spacing.md,
+  },
+  addLink: {
+    ...typography.subheading,
+    alignSelf: "flex-start",
+    backgroundColor: colors.ember,
+    borderRadius: 8,
+    color: colors.night,
+    marginTop: spacing.lg,
+    overflow: "hidden",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   statsRow: {
     flexDirection: "row",

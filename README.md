@@ -49,7 +49,15 @@ Milestone 4 adds the SQLite foundation:
 - Repository/query functions under `src/db/`
 - Screens read collection data from the local database layer
 
-Supabase, Discogs, authentication, sync, record creation/editing, and cloud product features are intentionally deferred to later milestones.
+Milestone 5 adds the local Add Copy flow:
+
+- Add Copy entry point from Collection
+- Custom/unlinked Copy creation in SQLite
+- Required title, artist, and media type
+- Optional condition, rating, Tags, Crates, and initial Journal note
+- Save navigates directly to the new Copy detail
+
+Supabase, Discogs, authentication, sync, cloud product features, and record editing are intentionally deferred to later milestones.
 
 ---
 

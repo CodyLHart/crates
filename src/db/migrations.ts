@@ -30,8 +30,14 @@ const migrations = [
 
       CREATE TABLE IF NOT EXISTS copies (
         id TEXT PRIMARY KEY,
-        release_id TEXT NOT NULL,
+        release_id TEXT,
+        media_type TEXT NOT NULL DEFAULT 'Vinyl',
+        title_override TEXT,
+        artist_override TEXT,
+        year_override INTEGER,
         condition TEXT NOT NULL,
+        condition_media TEXT,
+        condition_sleeve TEXT,
         rating INTEGER NOT NULL,
         acquired_from TEXT NOT NULL,
         acquired_at TEXT NOT NULL,
@@ -79,6 +85,69 @@ const migrations = [
       );
     `,
   },
+  {
+    id: 2,
+    name: "support_custom_unlinked_copies",
+    sql: `
+      PRAGMA foreign_keys = OFF;
+
+      CREATE TABLE IF NOT EXISTS copies_next (
+        id TEXT PRIMARY KEY,
+        release_id TEXT,
+        media_type TEXT NOT NULL DEFAULT 'Vinyl',
+        title_override TEXT,
+        artist_override TEXT,
+        year_override INTEGER,
+        condition TEXT NOT NULL,
+        condition_media TEXT,
+        condition_sleeve TEXT,
+        rating INTEGER NOT NULL,
+        acquired_from TEXT NOT NULL,
+        acquired_at TEXT NOT NULL,
+        personal_note TEXT NOT NULL,
+        last_played_at TEXT NOT NULL,
+        FOREIGN KEY (release_id) REFERENCES releases(id)
+      );
+
+      INSERT OR REPLACE INTO copies_next (
+        id,
+        release_id,
+        media_type,
+        title_override,
+        artist_override,
+        year_override,
+        condition,
+        condition_media,
+        condition_sleeve,
+        rating,
+        acquired_from,
+        acquired_at,
+        personal_note,
+        last_played_at
+      )
+      SELECT
+        id,
+        release_id,
+        'Vinyl',
+        NULL,
+        NULL,
+        NULL,
+        condition,
+        condition,
+        NULL,
+        rating,
+        acquired_from,
+        acquired_at,
+        personal_note,
+        last_played_at
+      FROM copies;
+
+      DROP TABLE copies;
+      ALTER TABLE copies_next RENAME TO copies;
+
+      PRAGMA foreign_keys = ON;
+    `,
+  },
 ] as const;
 
 export async function runMigrations(database: SQLite.SQLiteDatabase) {
@@ -100,15 +169,21 @@ export async function runMigrations(database: SQLite.SQLiteDatabase) {
       continue;
     }
 
-    await database.withTransactionAsync(async () => {
-      await database.execAsync(migration.sql);
-      await database.runAsync(
-        "INSERT INTO schema_migrations (id, name, applied_at) VALUES (?, ?, ?)",
-        migration.id,
-        migration.name,
-        new Date().toISOString(),
-      );
-    });
+    await database.execAsync("PRAGMA foreign_keys = OFF");
+
+    try {
+      await database.withTransactionAsync(async () => {
+        await database.execAsync(migration.sql);
+        await database.runAsync(
+          "INSERT INTO schema_migrations (id, name, applied_at) VALUES (?, ?, ?)",
+          migration.id,
+          migration.name,
+          new Date().toISOString(),
+        );
+      });
+    } finally {
+      await database.execAsync("PRAGMA foreign_keys = ON");
+    }
   }
 
   await seedDemoData(database);

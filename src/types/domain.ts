@@ -8,7 +8,7 @@ export type Release = {
   id: string;
   title: string;
   primaryArtistName: string;
-  year: number;
+  year: number | null;
   label: string;
   format: string;
   genre: string;
@@ -17,8 +17,14 @@ export type Release = {
 
 export type Copy = {
   id: string;
-  releaseId: string;
+  releaseId: string | null;
+  mediaType: string;
+  titleOverride: string | null;
+  artistOverride: string | null;
+  yearOverride: number | null;
   condition: string;
+  conditionMedia: string | null;
+  conditionSleeve: string | null;
   rating: number;
   acquiredFrom: string;
   acquiredAt: string;

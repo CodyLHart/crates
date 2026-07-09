@@ -50,6 +50,8 @@ export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
     );
   }
 
+  const releaseYear = copy.release.year ? `${copy.release.year} · ` : "";
+
   return (
     <Screen>
       <AppHeader title="Copy" subtitle={copy.release.primaryArtistName} showBack />
@@ -73,8 +75,8 @@ export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
           <Text style={styles.title}>{copy.release.title}</Text>
           <Text style={styles.artist}>{copy.release.primaryArtistName}</Text>
           <Text style={styles.body}>
-            {copy.release.year} · {copy.release.label} · {copy.release.format} ·{" "}
-            {copy.release.genre}
+            {releaseYear}
+            {copy.release.label} · {copy.release.format} · {copy.release.genre}
           </Text>
         </View>
       </AnimatedAppear>

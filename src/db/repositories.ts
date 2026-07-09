@@ -13,22 +13,28 @@ import type {
 
 type CopyRow = {
   copy_id: string;
-  release_id: string;
+  release_id: string | null;
+  media_type: string;
+  title_override: string | null;
+  artist_override: string | null;
+  year_override: number | null;
   condition: string;
+  condition_media: string | null;
+  condition_sleeve: string | null;
   rating: number;
   acquired_from: string;
   acquired_at: string;
   personal_note: string;
   last_played_at: string;
-  release_title: string;
-  primary_artist_name: string;
-  year: number;
-  label: string;
-  format: string;
-  genre: string;
-  artwork_background_color: string;
-  artwork_accent_color: string;
-  artwork_initials: string;
+  release_title: string | null;
+  primary_artist_name: string | null;
+  year: number | null;
+  label: string | null;
+  format: string | null;
+  genre: string | null;
+  artwork_background_color: string | null;
+  artwork_accent_color: string | null;
+  artwork_initials: string | null;
 };
 
 type CrateRow = {
@@ -51,30 +57,53 @@ type JournalEntryRow = {
   date: string;
 };
 
+export type CreateCustomCopyInput = {
+  title: string;
+  artist: string;
+  mediaType: string;
+  year?: number;
+  conditionMedia?: string;
+  conditionSleeve?: string;
+  rating?: number;
+  tagIds?: string[];
+  crateIds?: string[];
+  initialJournalNote?: string;
+};
+
+const copySelectSql = `
+  SELECT
+    copies.id AS copy_id,
+    copies.release_id,
+    copies.media_type,
+    copies.title_override,
+    copies.artist_override,
+    copies.year_override,
+    copies.condition,
+    copies.condition_media,
+    copies.condition_sleeve,
+    copies.rating,
+    copies.acquired_from,
+    copies.acquired_at,
+    copies.personal_note,
+    copies.last_played_at,
+    releases.title AS release_title,
+    releases.primary_artist_name,
+    releases.year,
+    releases.label,
+    releases.format,
+    releases.genre,
+    releases.artwork_background_color,
+    releases.artwork_accent_color,
+    releases.artwork_initials
+  FROM copies
+  LEFT JOIN releases ON releases.id = copies.release_id
+`;
+
 export async function listCopies() {
   await initializeDatabase();
   const database = await getDatabase();
   const rows = await database.getAllAsync<CopyRow>(`
-    SELECT
-      copies.id AS copy_id,
-      copies.release_id,
-      copies.condition,
-      copies.rating,
-      copies.acquired_from,
-      copies.acquired_at,
-      copies.personal_note,
-      copies.last_played_at,
-      releases.title AS release_title,
-      releases.primary_artist_name,
-      releases.year,
-      releases.label,
-      releases.format,
-      releases.genre,
-      releases.artwork_background_color,
-      releases.artwork_accent_color,
-      releases.artwork_initials
-    FROM copies
-    INNER JOIN releases ON releases.id = copies.release_id
+    ${copySelectSql}
     ORDER BY copies.last_played_at DESC
   `);
 
@@ -86,26 +115,7 @@ export async function getCopyWithRelease(copyId: string) {
   const database = await getDatabase();
   const row = await database.getFirstAsync<CopyRow>(
     `
-      SELECT
-        copies.id AS copy_id,
-        copies.release_id,
-        copies.condition,
-        copies.rating,
-        copies.acquired_from,
-        copies.acquired_at,
-        copies.personal_note,
-        copies.last_played_at,
-        releases.title AS release_title,
-        releases.primary_artist_name,
-        releases.year,
-        releases.label,
-        releases.format,
-        releases.genre,
-        releases.artwork_background_color,
-        releases.artwork_accent_color,
-        releases.artwork_initials
-      FROM copies
-      INNER JOIN releases ON releases.id = copies.release_id
+      ${copySelectSql}
       WHERE copies.id = ?
     `,
     copyId,
@@ -120,22 +130,31 @@ export async function getCopyWithRelease(copyId: string) {
   return copy;
 }
 
-export async function listCratesWithCopies(): Promise<CrateWithCopies[]> {
+export async function listCrates() {
   await initializeDatabase();
   const database = await getDatabase();
-  const crateRows = await database.getAllAsync<CrateRow>(
+  const rows = await database.getAllAsync<CrateRow>(
     "SELECT id, name, description FROM crates ORDER BY name",
   );
-  const copies = await listCopies();
 
-  return crateRows.map((row) => {
-    const crate = mapCrate(row, []);
+  return rows.map((row) => mapCrate(row, []));
+}
 
-    return {
-      crate,
-      copies: copies.filter((copy) => copy.crateIds.includes(crate.id)),
-    };
-  });
+export async function listTags() {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const rows = await database.getAllAsync<TagRow>("SELECT id, name FROM tags ORDER BY name");
+
+  return rows.map(mapTag);
+}
+
+export async function listCratesWithCopies(): Promise<CrateWithCopies[]> {
+  const [crateRows, copies] = await Promise.all([listCrates(), listCopies()]);
+
+  return crateRows.map((crate) => ({
+    crate,
+    copies: copies.filter((copy) => copy.crateIds.includes(crate.id)),
+  }));
 }
 
 export async function listRecentJournalEntries(): Promise<JournalEntryWithCopy[]> {
@@ -163,6 +182,94 @@ export async function listRecentJournalEntries(): Promise<JournalEntryWithCopy[]
   }
 
   return entries;
+}
+
+export async function createCustomCopy(input: CreateCustomCopyInput) {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const now = new Date().toISOString();
+  const copyId = createLocalId("copy");
+  const note = input.initialJournalNote?.trim();
+  const condition = input.conditionMedia?.trim() || "Not graded";
+
+  await database.withTransactionAsync(async () => {
+    await database.runAsync(
+      `
+        INSERT INTO copies (
+          id,
+          release_id,
+          media_type,
+          title_override,
+          artist_override,
+          year_override,
+          condition,
+          condition_media,
+          condition_sleeve,
+          rating,
+          acquired_from,
+          acquired_at,
+          personal_note,
+          last_played_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      copyId,
+      null,
+      input.mediaType.trim(),
+      input.title.trim(),
+      input.artist.trim(),
+      input.year ?? null,
+      condition,
+      input.conditionMedia?.trim() || null,
+      input.conditionSleeve?.trim() || null,
+      input.rating ?? 0,
+      "Added manually",
+      now,
+      note || "Custom Copy added locally.",
+      now,
+    );
+
+    for (const [position, crateId] of (input.crateIds ?? []).entries()) {
+      await database.runAsync(
+        "INSERT OR REPLACE INTO crate_copies (crate_id, copy_id, position) VALUES (?, ?, ?)",
+        crateId,
+        copyId,
+        position,
+      );
+    }
+
+    for (const tagId of input.tagIds ?? []) {
+      await database.runAsync(
+        "INSERT OR REPLACE INTO copy_tags (copy_id, tag_id) VALUES (?, ?)",
+        copyId,
+        tagId,
+      );
+    }
+
+    if (note) {
+      await database.runAsync(
+        `
+          INSERT INTO journal_entries (
+            id,
+            copy_id,
+            type,
+            title,
+            body,
+            date
+          )
+          VALUES (?, ?, ?, ?, ?, ?)
+        `,
+        createLocalId("journal"),
+        copyId,
+        "Note",
+        "Initial note",
+        note,
+        now,
+      );
+    }
+  });
+
+  return copyId;
 }
 
 async function hydrateCopies(rows: CopyRow[]) {
@@ -238,7 +345,13 @@ function mapCopy(row: CopyRow): Copy {
   return {
     id: row.copy_id,
     releaseId: row.release_id,
+    mediaType: row.media_type,
+    titleOverride: row.title_override,
+    artistOverride: row.artist_override,
+    yearOverride: row.year_override,
     condition: row.condition,
+    conditionMedia: row.condition_media,
+    conditionSleeve: row.condition_sleeve,
     rating: row.rating,
     acquiredFrom: row.acquired_from,
     acquiredAt: row.acquired_at,
@@ -250,18 +363,21 @@ function mapCopy(row: CopyRow): Copy {
 }
 
 function mapRelease(row: CopyRow): Release {
+  const title = row.release_title ?? row.title_override ?? "Untitled Copy";
+  const artist = row.primary_artist_name ?? row.artist_override ?? "Unknown Artist";
+
   return {
-    id: row.release_id,
-    title: row.release_title,
-    primaryArtistName: row.primary_artist_name,
-    year: row.year,
-    label: row.label,
-    format: row.format,
-    genre: row.genre,
+    id: row.release_id ?? `custom-release-${row.copy_id}`,
+    title,
+    primaryArtistName: artist,
+    year: row.year ?? row.year_override,
+    label: row.label ?? "Custom",
+    format: row.format ?? row.media_type,
+    genre: row.genre ?? "Custom",
     artwork: {
-      backgroundColor: row.artwork_background_color,
-      accentColor: row.artwork_accent_color,
-      initials: row.artwork_initials,
+      backgroundColor: row.artwork_background_color ?? "#4d4037",
+      accentColor: row.artwork_accent_color ?? "#d29a5a",
+      initials: row.artwork_initials ?? getArtworkInitials(title, artist),
     },
   };
 }
@@ -291,4 +407,17 @@ function mapJournalEntry(row: JournalEntryRow): JournalEntry {
     body: row.body,
     date: row.date,
   };
+}
+
+function createLocalId(prefix: string) {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function getArtworkInitials(title: string, artist: string) {
+  const words = `${artist} ${title}`
+    .split(/\s+/)
+    .filter((word) => word.length > 0)
+    .slice(0, 2);
+
+  return words.map((word) => word[0]?.toUpperCase()).join("") || "CR";
 }

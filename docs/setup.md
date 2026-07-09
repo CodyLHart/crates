@@ -319,6 +319,15 @@ Milestone 4 may add the SQLite foundation:
 
 Do not add Supabase, Discogs, authentication, sync, or record creation/editing during Milestone 4.
 
+Milestone 5 may add local custom Copy creation:
+
+- Add Copy route
+- Required title, artist, and media type
+- Optional condition, rating, Tags, Crates, and initial Journal note
+- SQLite insert through repository functions
+
+Do not add Discogs lookup, Supabase, authentication, sync, image upload, or editing during Milestone 5.
+
 ---
 
 # Notes

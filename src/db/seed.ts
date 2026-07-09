@@ -40,18 +40,30 @@ export async function seedDemoData(database: SQLite.SQLiteDatabase) {
           INSERT OR REPLACE INTO copies (
             id,
             release_id,
+            media_type,
+            title_override,
+            artist_override,
+            year_override,
             condition,
+            condition_media,
+            condition_sleeve,
             rating,
             acquired_from,
             acquired_at,
             personal_note,
             last_played_at
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         copy.id,
         copy.releaseId,
+        copy.mediaType,
+        copy.titleOverride,
+        copy.artistOverride,
+        copy.yearOverride,
         copy.condition,
+        copy.conditionMedia,
+        copy.conditionSleeve,
         copy.rating,
         copy.acquiredFrom,
         copy.acquiredAt,
