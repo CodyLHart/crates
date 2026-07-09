@@ -148,6 +148,13 @@ const migrations = [
       PRAGMA foreign_keys = ON;
     `,
   },
+  {
+    id: 3,
+    name: "add_crate_cover_behavior",
+    sql: `
+      ALTER TABLE crates ADD COLUMN cover_behavior TEXT NOT NULL DEFAULT 'auto';
+    `,
+  },
 ] as const;
 
 export async function runMigrations(database: SQLite.SQLiteDatabase) {

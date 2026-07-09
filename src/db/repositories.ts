@@ -41,6 +41,7 @@ type CrateRow = {
   id: string;
   name: string;
   description: string;
+  cover_behavior: Crate["coverBehavior"];
 };
 
 type TagRow = {
@@ -71,6 +72,13 @@ export type CreateCustomCopyInput = {
 };
 
 export type UpdateCopyInput = Omit<CreateCustomCopyInput, "initialJournalNote">;
+
+export type SaveCrateInput = {
+  name: string;
+  description: string;
+  coverBehavior: Crate["coverBehavior"];
+  copyIds: string[];
+};
 
 const copySelectSql = `
   SELECT
@@ -136,7 +144,7 @@ export async function listCrates() {
   await initializeDatabase();
   const database = await getDatabase();
   const rows = await database.getAllAsync<CrateRow>(
-    "SELECT id, name, description FROM crates ORDER BY name",
+    "SELECT id, name, description, cover_behavior FROM crates ORDER BY name",
   );
 
   return rows.map((row) => mapCrate(row, []));
@@ -157,6 +165,68 @@ export async function listCratesWithCopies(): Promise<CrateWithCopies[]> {
     crate,
     copies: copies.filter((copy) => copy.crateIds.includes(crate.id)),
   }));
+}
+
+export async function getCrateWithCopies(crateId: string): Promise<CrateWithCopies | undefined> {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const row = await database.getFirstAsync<CrateRow>(
+    "SELECT id, name, description, cover_behavior FROM crates WHERE id = ?",
+    crateId,
+  );
+
+  if (!row) {
+    return undefined;
+  }
+
+  const crate = mapCrate(row, []);
+  const copies = await listCopies();
+  const crateCopies = copies.filter((copy) => copy.crateIds.includes(crate.id));
+
+  return {
+    crate: {
+      ...crate,
+      copyIds: crateCopies.map((copy) => copy.id),
+    },
+    copies: crateCopies,
+  };
+}
+
+export async function createCrate(input: SaveCrateInput) {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const crateId = createLocalId("crate");
+
+  await database.withTransactionAsync(async () => {
+    await database.runAsync(
+      "INSERT INTO crates (id, name, description, cover_behavior) VALUES (?, ?, ?, ?)",
+      crateId,
+      input.name.trim(),
+      input.description.trim(),
+      input.coverBehavior,
+    );
+
+    await replaceCrateCopies(crateId, input.copyIds);
+  });
+
+  return crateId;
+}
+
+export async function updateCrate(crateId: string, input: SaveCrateInput) {
+  await initializeDatabase();
+  const database = await getDatabase();
+
+  await database.withTransactionAsync(async () => {
+    await database.runAsync(
+      "UPDATE crates SET name = ?, description = ?, cover_behavior = ? WHERE id = ?",
+      input.name.trim(),
+      input.description.trim(),
+      input.coverBehavior,
+      crateId,
+    );
+
+    await replaceCrateCopies(crateId, input.copyIds);
+  });
 }
 
 export async function listRecentJournalEntries(): Promise<JournalEntryWithCopy[]> {
@@ -352,7 +422,7 @@ async function listCratesForCopy(copyId: string) {
   const database = await getDatabase();
   const rows = await database.getAllAsync<CrateRow>(
     `
-      SELECT crates.id, crates.name, crates.description
+      SELECT crates.id, crates.name, crates.description, crates.cover_behavior
       FROM crates
       INNER JOIN crate_copies ON crate_copies.crate_id = crates.id
       WHERE crate_copies.copy_id = ?
@@ -362,6 +432,20 @@ async function listCratesForCopy(copyId: string) {
   );
 
   return rows.map((row) => mapCrate(row, [copyId]));
+}
+
+async function replaceCrateCopies(crateId: string, copyIds: string[]) {
+  const database = await getDatabase();
+
+  await database.runAsync("DELETE FROM crate_copies WHERE crate_id = ?", crateId);
+  for (const [position, copyId] of copyIds.entries()) {
+    await database.runAsync(
+      "INSERT OR REPLACE INTO crate_copies (crate_id, copy_id, position) VALUES (?, ?, ?)",
+      crateId,
+      copyId,
+      position,
+    );
+  }
 }
 
 async function listTagsForCopy(copyId: string) {
@@ -441,6 +525,7 @@ function mapCrate(row: CrateRow, copyIds: string[]): Crate {
     id: row.id,
     name: row.name,
     description: row.description,
+    coverBehavior: row.cover_behavior,
     copyIds,
   };
 }

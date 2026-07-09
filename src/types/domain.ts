@@ -38,6 +38,7 @@ export type Crate = {
   id: string;
   name: string;
   description: string;
+  coverBehavior: "auto" | "generated";
   copyIds: string[];
 };
 

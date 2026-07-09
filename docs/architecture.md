@@ -69,6 +69,8 @@ Milestone 5 adds local custom Copy creation. The Add Copy flow writes directly t
 
 Milestone 6 adds local Copy editing. The Edit Copy flow reuses the same form surface as Add Copy, reads the selected Copy through the repository layer, updates Copy override fields and Tag/Crate memberships in SQLite, and returns to the refreshed Copy Detail screen. Discogs lookup, Supabase, authentication, sync, and image upload remain deferred.
 
+Milestone 7 adds local Crate creation and editing. Crates are still groupings of Copies, not Releases; the New/Edit Crate flows write Crate name, description, cover behavior, and `crate_copies` membership through `src/db/repositories.ts`. Cover behavior is limited to existing Copy artwork or generated placeholder artwork. Discogs lookup, Supabase, authentication, sync, and image upload remain deferred.
+
 ---
 
 # Core Technology Choices

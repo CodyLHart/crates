@@ -336,6 +336,14 @@ Milestone 6 may add local Copy editing:
 
 Do not add Discogs lookup, Supabase, authentication, sync, or image upload during Milestone 6.
 
+Milestone 7 may add local Crate creation and editing:
+
+- New Crate and Edit Crate routes
+- SQLite updates for Crate name, description, cover behavior, and Copy membership
+- Crates remain groupings of Copies, not Releases
+
+Do not add Discogs lookup, Supabase, authentication, sync, or image upload during Milestone 7.
+
 ---
 
 # Notes

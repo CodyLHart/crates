@@ -63,6 +63,13 @@ Milestone 6 adds the local Edit Copy flow:
 - Local updates for Copy overrides, media type, condition, rating, Tags, and Crates
 - Save returns to Copy Detail with refreshed SQLite values
 
+Milestone 7 adds local Crate creation and editing:
+
+- New Crate entry point from Crates
+- Crate Detail with Edit Crate entry point
+- Local updates for Crate name, description, cover behavior, and Copy membership
+- Save returns to Crate Detail with refreshed SQLite values
+
 Supabase, Discogs, authentication, sync, image upload, and cloud product features are intentionally deferred to later milestones.
 
 ---

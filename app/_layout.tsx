@@ -8,6 +8,8 @@ export default function RootLayout() {
       <Stack.Screen name="copy/new" />
       <Stack.Screen name="copy/[id]/edit" />
       <Stack.Screen name="copy/[id]" />
+      <Stack.Screen name="crate/new" />
+      <Stack.Screen name="crate/[id]/edit" />
       <Stack.Screen name="crate/[id]" />
       <Stack.Screen name="artist/[id]" />
       <Stack.Screen name="track/[id]" />

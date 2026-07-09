@@ -1,8 +1,10 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Link } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ArtworkTile } from "@/components/ArtworkTile";
 import { colors, radii, spacing, typography } from "@/design/tokens";
 import type { CopyWithRelease, Crate } from "@/types/domain";
+import { getCrateArtwork } from "@/utils/crateArtwork";
 
 type CrateCardProps = {
   crate: Crate;
@@ -10,17 +12,21 @@ type CrateCardProps = {
 };
 
 export function CrateCard({ crate, copies }: CrateCardProps) {
+  const artwork = getCrateArtwork(crate, copies);
+
   return (
-    <View style={styles.card}>
-      <View style={styles.artworkStack}>
-        {copies.slice(0, 3).map((copy) => (
-          <ArtworkTile key={copy.id} artwork={copy.release.artwork} size="sm" />
-        ))}
-      </View>
-      <Text style={styles.name}>{crate.name}</Text>
-      <Text style={styles.description}>{crate.description}</Text>
-      <Text style={styles.count}>{copies.length} Copies</Text>
-    </View>
+    <Link href={`/crate/${crate.id}`} asChild>
+      <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+        <View style={styles.artworkStack}>
+          {artwork.map((swatch, index) => (
+            <ArtworkTile key={`${crate.id}-${index}`} artwork={swatch} size="sm" />
+          ))}
+        </View>
+        <Text style={styles.name}>{crate.name}</Text>
+        <Text style={styles.description}>{crate.description}</Text>
+        <Text style={styles.count}>{copies.length} Copies</Text>
+      </Pressable>
+    </Link>
   );
 }
 
@@ -32,6 +38,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: spacing.sm,
     padding: spacing.md,
+  },
+  cardPressed: {
+    opacity: 0.82,
+    transform: [{ scale: 0.992 }],
   },
   artworkStack: {
     flexDirection: "row",

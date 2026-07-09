@@ -1,6 +1,9 @@
-import { placeholderRoutes } from "@/constants/placeholders";
-import { PlaceholderRouteScreen } from "@/features/app-shell/screens/PlaceholderRouteScreen";
+import { useLocalSearchParams } from "expo-router";
+
+import { CrateDetailScreen } from "@/features/app-shell/screens/CrateDetailScreen";
 
 export default function CrateDetailRoute() {
-  return <PlaceholderRouteScreen route={placeholderRoutes.crate} />;
+  const { id } = useLocalSearchParams<{ id: string }>();
+
+  return <CrateDetailScreen crateId={id} />;
 }

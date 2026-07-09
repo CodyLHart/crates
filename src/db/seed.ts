@@ -74,10 +74,11 @@ export async function seedDemoData(database: SQLite.SQLiteDatabase) {
 
     for (const crate of crates) {
       await database.runAsync(
-        "INSERT OR REPLACE INTO crates (id, name, description) VALUES (?, ?, ?)",
+        "INSERT OR REPLACE INTO crates (id, name, description, cover_behavior) VALUES (?, ?, ?, ?)",
         crate.id,
         crate.name,
         crate.description,
+        crate.coverBehavior,
       );
     }
 

@@ -1,5 +1,8 @@
+import { Link, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
+import { AppHeader } from "@/components/AppHeader";
 import { CrateCard } from "@/components/CrateCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Screen } from "@/components/Screen";
@@ -8,15 +11,30 @@ import { colors, spacing, typography } from "@/design/tokens";
 import { useAsyncData } from "@/hooks/useAsyncData";
 
 export function CratesScreen() {
-  const { data: crateGroups = [], error, isLoading } = useAsyncData(listCratesWithCopies, []);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setRefreshKey((current) => current + 1);
+    }, []),
+  );
+
+  const {
+    data: crateGroups = [],
+    error,
+    isLoading,
+  } = useAsyncData(listCratesWithCopies, [refreshKey]);
 
   return (
     <Screen>
-      <Text style={styles.eyebrow}>Crates</Text>
+      <AppHeader title="Crates" subtitle="Flexible groups for your Copies" />
       <Text style={styles.title}>Flexible groups for how you actually listen.</Text>
       <Text style={styles.body}>
         Copies can live in more than one Crate, so mood and purpose can overlap.
       </Text>
+      <Link href="/crate/new" style={styles.addLink}>
+        New Crate
+      </Link>
 
       <View style={styles.stack}>
         {isLoading ? (
@@ -39,20 +57,25 @@ export function CratesScreen() {
 }
 
 const styles = StyleSheet.create({
-  eyebrow: {
-    ...typography.eyebrow,
-    color: colors.ember,
-    textTransform: "uppercase",
-  },
   title: {
     ...typography.title,
     color: colors.cream,
-    marginTop: spacing.sm,
   },
   body: {
     ...typography.body,
     color: colors.creamMuted,
     marginTop: spacing.md,
+  },
+  addLink: {
+    ...typography.subheading,
+    alignSelf: "flex-start",
+    backgroundColor: colors.ember,
+    borderRadius: 8,
+    color: colors.night,
+    marginTop: spacing.lg,
+    overflow: "hidden",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   stack: {
     gap: spacing.md,

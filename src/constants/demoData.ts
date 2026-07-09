@@ -86,18 +86,21 @@ export const crates: Crate[] = [
     id: "crate-sunday-morning",
     name: "Sunday Morning",
     description: "Warm, open records for slow starts and coffee.",
+    coverBehavior: "auto",
     copyIds: ["copy-blue-train", "copy-songs-key-life"],
   },
   {
     id: "crate-late-night",
     name: "Late Night Room",
     description: "Dim lights, longer sides, and records that reward attention.",
+    coverBehavior: "auto",
     copyIds: ["copy-hounds-love", "copy-music-right-children"],
   },
   {
     id: "crate-floor-fillers",
     name: "Floor Fillers",
     description: "Copies that make the room move without asking twice.",
+    coverBehavior: "auto",
     copyIds: ["copy-sign-times", "copy-songs-key-life"],
   },
 ];
