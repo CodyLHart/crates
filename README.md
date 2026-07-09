@@ -34,6 +34,13 @@ Milestone 2 adds the local demo app shell:
 - Reusable app-shell UI components
 - Dark-first, artwork-forward placeholder experience
 
+Milestone 3 refines the Collection experience:
+
+- Artwork-first Collection browsing
+- Hybrid Copy cards with concise metadata
+- Artwork-led Copy detail page
+- Tasteful local animations using React Native primitives
+
 Supabase, SQLite, Discogs, authentication, sync, and product features are intentionally deferred to later milestones.
 
 ---

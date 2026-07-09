@@ -61,6 +61,8 @@ The current runtime data source is `src/constants/demoData.ts`, which defines de
 
 Supabase, SQLite, Discogs, authentication, sync, and product persistence remain deferred.
 
+Milestone 3 refines only the Collection and Copy Detail presentation. It keeps `src/constants/demoData.ts` as the data source while making browsing more artwork-first, adding concise Copy metadata, and using small React Native entrance animations for context.
+
 ---
 
 # Core Technology Choices

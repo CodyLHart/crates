@@ -5,13 +5,14 @@ import { colors, radii, typography } from "@/design/tokens";
 
 type ArtworkTileProps = {
   artwork: ArtworkSwatch;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
 };
 
 const sizes = {
   sm: 64,
   md: 96,
   lg: 168,
+  xl: 260,
 } as const;
 
 export function ArtworkTile({ artwork, size = "md" }: ArtworkTileProps) {
@@ -29,7 +30,7 @@ export function ArtworkTile({ artwork, size = "md" }: ArtworkTileProps) {
       ]}
     >
       <View style={[styles.band, { backgroundColor: artwork.accentColor }]} />
-      <Text style={[styles.initials, size === "lg" && styles.initialsLarge]}>
+      <Text style={[styles.initials, (size === "lg" || size === "xl") && styles.initialsLarge]}>
         {artwork.initials}
       </Text>
     </View>
@@ -56,8 +57,8 @@ const styles = StyleSheet.create({
     top: 8,
   },
   initialsLarge: {
-    fontSize: 32,
-    lineHeight: 38,
+    fontSize: 34,
+    lineHeight: 40,
     left: 14,
     top: 12,
   },
