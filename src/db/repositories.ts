@@ -70,6 +70,8 @@ export type CreateCustomCopyInput = {
   initialJournalNote?: string;
 };
 
+export type UpdateCopyInput = Omit<CreateCustomCopyInput, "initialJournalNote">;
+
 const copySelectSql = `
   SELECT
     copies.id AS copy_id,
@@ -272,6 +274,58 @@ export async function createCustomCopy(input: CreateCustomCopyInput) {
   return copyId;
 }
 
+export async function updateCopy(copyId: string, input: UpdateCopyInput) {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const condition = input.conditionMedia?.trim() || "Not graded";
+
+  await database.withTransactionAsync(async () => {
+    await database.runAsync(
+      `
+        UPDATE copies
+        SET
+          media_type = ?,
+          title_override = ?,
+          artist_override = ?,
+          year_override = ?,
+          condition = ?,
+          condition_media = ?,
+          condition_sleeve = ?,
+          rating = ?
+        WHERE id = ?
+      `,
+      input.mediaType.trim(),
+      input.title.trim(),
+      input.artist.trim(),
+      input.year ?? null,
+      condition,
+      input.conditionMedia?.trim() || null,
+      input.conditionSleeve?.trim() || null,
+      input.rating ?? 0,
+      copyId,
+    );
+
+    await database.runAsync("DELETE FROM crate_copies WHERE copy_id = ?", copyId);
+    for (const [position, crateId] of (input.crateIds ?? []).entries()) {
+      await database.runAsync(
+        "INSERT OR REPLACE INTO crate_copies (crate_id, copy_id, position) VALUES (?, ?, ?)",
+        crateId,
+        copyId,
+        position,
+      );
+    }
+
+    await database.runAsync("DELETE FROM copy_tags WHERE copy_id = ?", copyId);
+    for (const tagId of input.tagIds ?? []) {
+      await database.runAsync(
+        "INSERT OR REPLACE INTO copy_tags (copy_id, tag_id) VALUES (?, ?)",
+        copyId,
+        tagId,
+      );
+    }
+  });
+}
+
 async function hydrateCopies(rows: CopyRow[]) {
   const copies: CopyWithRelease[] = [];
 
@@ -363,16 +417,16 @@ function mapCopy(row: CopyRow): Copy {
 }
 
 function mapRelease(row: CopyRow): Release {
-  const title = row.release_title ?? row.title_override ?? "Untitled Copy";
-  const artist = row.primary_artist_name ?? row.artist_override ?? "Unknown Artist";
+  const title = row.title_override ?? row.release_title ?? "Untitled Copy";
+  const artist = row.artist_override ?? row.primary_artist_name ?? "Unknown Artist";
 
   return {
     id: row.release_id ?? `custom-release-${row.copy_id}`,
     title,
     primaryArtistName: artist,
-    year: row.year ?? row.year_override,
+    year: row.year_override ?? row.year,
     label: row.label ?? "Custom",
-    format: row.format ?? row.media_type,
+    format: row.media_type || row.format || "Unknown Format",
     genre: row.genre ?? "Custom",
     artwork: {
       backgroundColor: row.artwork_background_color ?? "#4d4037",

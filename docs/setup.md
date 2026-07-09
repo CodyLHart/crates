@@ -328,6 +328,14 @@ Milestone 5 may add local custom Copy creation:
 
 Do not add Discogs lookup, Supabase, authentication, sync, image upload, or editing during Milestone 5.
 
+Milestone 6 may add local Copy editing:
+
+- Edit Copy route
+- Reused Add/Edit Copy form
+- SQLite updates for Copy override fields, condition, rating, Tags, and Crates
+
+Do not add Discogs lookup, Supabase, authentication, sync, or image upload during Milestone 6.
+
 ---
 
 # Notes

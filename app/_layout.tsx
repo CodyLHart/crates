@@ -6,6 +6,7 @@ export default function RootLayout() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="copy/new" />
+      <Stack.Screen name="copy/[id]/edit" />
       <Stack.Screen name="copy/[id]" />
       <Stack.Screen name="crate/[id]" />
       <Stack.Screen name="artist/[id]" />

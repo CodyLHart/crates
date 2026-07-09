@@ -57,7 +57,13 @@ Milestone 5 adds the local Add Copy flow:
 - Optional condition, rating, Tags, Crates, and initial Journal note
 - Save navigates directly to the new Copy detail
 
-Supabase, Discogs, authentication, sync, cloud product features, and record editing are intentionally deferred to later milestones.
+Milestone 6 adds the local Edit Copy flow:
+
+- Edit Copy entry point from Copy Detail
+- Local updates for Copy overrides, media type, condition, rating, Tags, and Crates
+- Save returns to Copy Detail with refreshed SQLite values
+
+Supabase, Discogs, authentication, sync, image upload, and cloud product features are intentionally deferred to later milestones.
 
 ---
 

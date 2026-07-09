@@ -65,7 +65,9 @@ Milestone 3 refines only the Collection and Copy Detail presentation. It keeps `
 
 Milestone 4 introduces the SQLite foundation. `src/constants/demoData.ts` now acts as seed input only; screens read through async repository functions in `src/db/`, which initialize Expo SQLite, run migrations, seed the demo Collection, and return hydrated domain objects. Supabase, Discogs, authentication, sync, and editing remain deferred.
 
-Milestone 5 adds local custom Copy creation. The Add Copy flow writes directly to SQLite through `src/db/repositories.ts`, supports unlinked Copies with nullable `release_id` and Copy-level title/artist/year overrides, and can attach existing Tags, Crates, and an initial Journal Entry. Discogs lookup, Supabase, authentication, sync, image upload, and editing remain deferred.
+Milestone 5 adds local custom Copy creation. The Add Copy flow writes directly to SQLite through `src/db/repositories.ts`, supports unlinked Copies with nullable `release_id` and Copy-level title/artist/year overrides, and can attach existing Tags, Crates, and an initial Journal Entry. Discogs lookup, Supabase, authentication, sync, and image upload remain deferred.
+
+Milestone 6 adds local Copy editing. The Edit Copy flow reuses the same form surface as Add Copy, reads the selected Copy through the repository layer, updates Copy override fields and Tag/Crate memberships in SQLite, and returns to the refreshed Copy Detail screen. Discogs lookup, Supabase, authentication, sync, and image upload remain deferred.
 
 ---
 

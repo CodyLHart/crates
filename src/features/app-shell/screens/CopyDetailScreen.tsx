@@ -1,3 +1,5 @@
+import { Link, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { AnimatedAppear } from "@/components/AnimatedAppear";
@@ -15,7 +17,19 @@ type CopyDetailScreenProps = {
 };
 
 export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
-  const { data: copy, error, isLoading } = useAsyncData(() => getCopyWithRelease(copyId), [copyId]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setRefreshKey((current) => current + 1);
+    }, []),
+  );
+
+  const {
+    data: copy,
+    error,
+    isLoading,
+  } = useAsyncData(() => getCopyWithRelease(copyId), [copyId, refreshKey]);
 
   if (isLoading) {
     return (
@@ -78,6 +92,15 @@ export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
             {releaseYear}
             {copy.release.label} · {copy.release.format} · {copy.release.genre}
           </Text>
+          <Link
+            href={{
+              pathname: "/copy/[id]/edit",
+              params: { id: copy.id },
+            }}
+            style={styles.editLink}
+          >
+            Edit Copy
+          </Link>
         </View>
       </AnimatedAppear>
 
@@ -179,6 +202,17 @@ const styles = StyleSheet.create({
   body: {
     ...typography.body,
     color: colors.creamMuted,
+  },
+  editLink: {
+    ...typography.subheading,
+    alignSelf: "flex-start",
+    backgroundColor: colors.ember,
+    borderRadius: radii.md,
+    color: colors.night,
+    marginTop: spacing.md,
+    overflow: "hidden",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   snapshot: {
     flexDirection: "row",
