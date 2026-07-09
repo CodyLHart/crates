@@ -3,8 +3,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { ArtworkTile } from "@/components/ArtworkTile";
 import { TagPill } from "@/components/TagPill";
-import type { CopyWithRelease } from "@/constants/demoData";
 import { colors, radii, spacing, typography } from "@/design/tokens";
+import type { CopyWithRelease } from "@/types/domain";
 
 type CollectionCopyCardProps = {
   copy: CopyWithRelease;

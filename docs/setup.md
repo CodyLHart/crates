@@ -310,6 +310,15 @@ Milestone 2 may add the app shell with local demo data only:
 
 Do not add Supabase, SQLite, Discogs, authentication, sync, or persistence during Milestone 2.
 
+Milestone 4 may add the SQLite foundation:
+
+- Expo SQLite
+- Local migrations under `src/db/`
+- Seeded local demo data
+- Repository/query functions for app screens
+
+Do not add Supabase, Discogs, authentication, sync, or record creation/editing during Milestone 4.
+
 ---
 
 # Notes

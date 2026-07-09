@@ -41,7 +41,15 @@ Milestone 3 refines the Collection experience:
 - Artwork-led Copy detail page
 - Tasteful local animations using React Native primitives
 
-Supabase, SQLite, Discogs, authentication, sync, and product features are intentionally deferred to later milestones.
+Milestone 4 adds the SQLite foundation:
+
+- Expo SQLite local database
+- Migrations for Releases, Copies, Crates, Tags, and Journal Entries
+- Demo data seeded into SQLite
+- Repository/query functions under `src/db/`
+- Screens read collection data from the local database layer
+
+Supabase, Discogs, authentication, sync, record creation/editing, and cloud product features are intentionally deferred to later milestones.
 
 ---
 

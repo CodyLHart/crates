@@ -6,14 +6,25 @@ import { CollectionCopyCard } from "@/components/CollectionCopyCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Screen } from "@/components/Screen";
 import { SectionHeader } from "@/components/SectionHeader";
-import { crates, demoCopies } from "@/constants/demoData";
+import { listCopies, listCratesWithCopies } from "@/db/repositories";
 import { colors, spacing, typography } from "@/design/tokens";
-
-const featuredCopy = demoCopies[2];
-const shelfCopies = featuredCopy ? demoCopies.filter((copy) => copy.id !== featuredCopy.id) : [];
-const highlyRatedCopies = demoCopies.filter((copy) => copy.rating >= 4);
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 export function CollectionScreen() {
+  const { data, error, isLoading } = useAsyncData(async () => {
+    const [copies, crateGroups] = await Promise.all([listCopies(), listCratesWithCopies()]);
+
+    return {
+      copies,
+      crateCount: crateGroups.length,
+    };
+  }, []);
+
+  const copies = data?.copies ?? [];
+  const featuredCopy = copies[2] ?? copies[0];
+  const shelfCopies = featuredCopy ? copies.filter((copy) => copy.id !== featuredCopy.id) : [];
+  const highlyRatedCopies = copies.filter((copy) => copy.rating >= 4);
+
   return (
     <Screen>
       <AppHeader title="Collection" subtitle="Your physical music, ready to browse" />
@@ -25,7 +36,18 @@ export function CollectionScreen() {
         </Text>
       </AnimatedAppear>
 
-      {featuredCopy ? (
+      {isLoading ? (
+        <AnimatedAppear delay={90}>
+          <EmptyState
+            title="Loading local collection"
+            body="Opening the SQLite shelf on this device."
+          />
+        </AnimatedAppear>
+      ) : error ? (
+        <AnimatedAppear delay={90}>
+          <EmptyState title="Collection unavailable" body={error.message} />
+        </AnimatedAppear>
+      ) : featuredCopy ? (
         <AnimatedAppear delay={90}>
           <SectionHeader eyebrow="Featured Copy" title="Worth pulling today" />
           <CollectionCopyCard copy={featuredCopy} featured />
@@ -42,11 +64,11 @@ export function CollectionScreen() {
       <AnimatedAppear delay={160}>
         <View style={styles.statsRow}>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{demoCopies.length}</Text>
+            <Text style={styles.statValue}>{copies.length}</Text>
             <Text style={styles.statLabel}>Copies</Text>
           </View>
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{crates.length}</Text>
+            <Text style={styles.statValue}>{data?.crateCount ?? 0}</Text>
             <Text style={styles.statLabel}>Crates</Text>
           </View>
           <View style={styles.stat}>

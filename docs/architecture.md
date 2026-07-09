@@ -59,9 +59,11 @@ Milestone 2 uses local mock data only to validate the app shell and navigation e
 
 The current runtime data source is `src/constants/demoData.ts`, which defines demo Copies, Releases, Crates, Tags, and Journal Entries. This is not persistence and should be replaced by SQLite-backed data access in a later milestone.
 
-Supabase, SQLite, Discogs, authentication, sync, and product persistence remain deferred.
+Supabase, Discogs, authentication, sync, and product persistence remain deferred.
 
 Milestone 3 refines only the Collection and Copy Detail presentation. It keeps `src/constants/demoData.ts` as the data source while making browsing more artwork-first, adding concise Copy metadata, and using small React Native entrance animations for context.
+
+Milestone 4 introduces the SQLite foundation. `src/constants/demoData.ts` now acts as seed input only; screens read through async repository functions in `src/db/`, which initialize Expo SQLite, run migrations, seed the demo Collection, and return hydrated domain objects. Supabase, Discogs, authentication, sync, and record creation/editing remain deferred.
 
 ---
 

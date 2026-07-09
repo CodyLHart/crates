@@ -1,8 +1,8 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { ArtworkTile } from "@/components/ArtworkTile";
-import type { CopyWithRelease, Crate } from "@/constants/demoData";
 import { colors, radii, spacing, typography } from "@/design/tokens";
+import type { CopyWithRelease, Crate } from "@/types/domain";
 
 type CrateCardProps = {
   crate: Crate;

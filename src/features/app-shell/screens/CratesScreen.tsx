@@ -1,11 +1,15 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { CrateCard } from "@/components/CrateCard";
+import { EmptyState } from "@/components/EmptyState";
 import { Screen } from "@/components/Screen";
-import { crates, demoCopies } from "@/constants/demoData";
+import { listCratesWithCopies } from "@/db/repositories";
 import { colors, spacing, typography } from "@/design/tokens";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 export function CratesScreen() {
+  const { data: crateGroups = [], error, isLoading } = useAsyncData(listCratesWithCopies, []);
+
   return (
     <Screen>
       <Text style={styles.eyebrow}>Crates</Text>
@@ -15,13 +19,20 @@ export function CratesScreen() {
       </Text>
 
       <View style={styles.stack}>
-        {crates.map((crate) => (
-          <CrateCard
-            key={crate.id}
-            crate={crate}
-            copies={demoCopies.filter((copy) => crate.copyIds.includes(copy.id))}
+        {isLoading ? (
+          <EmptyState title="Loading Crates" body="Reading local Crate memberships from SQLite." />
+        ) : error ? (
+          <EmptyState title="Crates unavailable" body={error.message} />
+        ) : crateGroups.length ? (
+          crateGroups.map(({ crate, copies }) => (
+            <CrateCard key={crate.id} crate={crate} copies={copies} />
+          ))
+        ) : (
+          <EmptyState
+            title="No Crates yet"
+            body="Crates will group Copies by mood, purpose, or memory."
           />
-        ))}
+        )}
       </View>
     </Screen>
   );

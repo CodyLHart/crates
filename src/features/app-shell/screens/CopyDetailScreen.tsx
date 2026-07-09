@@ -6,14 +6,38 @@ import { ArtworkTile } from "@/components/ArtworkTile";
 import { EmptyState } from "@/components/EmptyState";
 import { Screen } from "@/components/Screen";
 import { TagPill } from "@/components/TagPill";
-import type { CopyWithRelease } from "@/constants/demoData";
+import { getCopyWithRelease } from "@/db/repositories";
 import { colors, radii, spacing, typography } from "@/design/tokens";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 type CopyDetailScreenProps = {
-  copy?: CopyWithRelease;
+  copyId: string;
 };
 
-export function CopyDetailScreen({ copy }: CopyDetailScreenProps) {
+export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
+  const { data: copy, error, isLoading } = useAsyncData(() => getCopyWithRelease(copyId), [copyId]);
+
+  if (isLoading) {
+    return (
+      <Screen>
+        <AppHeader title="Copy" subtitle="Loading from local SQLite" showBack />
+        <EmptyState
+          title="Loading Copy"
+          body="Opening this Copy from the local collection database."
+        />
+      </Screen>
+    );
+  }
+
+  if (error) {
+    return (
+      <Screen>
+        <AppHeader title="Copy" subtitle="Local database error" showBack />
+        <EmptyState title="Copy unavailable" body={error.message} />
+      </Screen>
+    );
+  }
+
   if (!copy) {
     return (
       <Screen>

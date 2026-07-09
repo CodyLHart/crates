@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import type { ArtworkSwatch } from "@/constants/demoData";
 import { colors, radii, typography } from "@/design/tokens";
+import type { ArtworkSwatch } from "@/types/domain";
 
 type ArtworkTileProps = {
   artwork: ArtworkSwatch;
