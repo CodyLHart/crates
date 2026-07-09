@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -12,11 +12,19 @@ import { useAsyncData } from "@/hooks/useAsyncData";
 export function AddCopyScreen() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setRefreshKey((current) => current + 1);
+    }, []),
+  );
+
   const { data, error, isLoading } = useAsyncData(async () => {
     const [crates, tags] = await Promise.all([listCrates(), listTags()]);
 
     return { crates, tags };
-  }, []);
+  }, [refreshKey]);
 
   async function saveCopy(values: CopyFormValues) {
     setIsSaving(true);

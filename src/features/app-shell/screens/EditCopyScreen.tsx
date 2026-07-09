@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
@@ -17,6 +17,14 @@ type EditCopyScreenProps = {
 export function EditCopyScreen({ copyId }: EditCopyScreenProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setRefreshKey((current) => current + 1);
+    }, []),
+  );
+
   const { data, error, isLoading } = useAsyncData(async () => {
     const [copy, crates, tags] = await Promise.all([
       getCopyWithRelease(copyId),
@@ -25,7 +33,7 @@ export function EditCopyScreen({ copyId }: EditCopyScreenProps) {
     ]);
 
     return { copy, crates, tags };
-  }, [copyId]);
+  }, [copyId, refreshKey]);
 
   async function saveCopy(values: CopyFormValues) {
     setIsSaving(true);

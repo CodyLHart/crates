@@ -74,11 +74,11 @@ export const releases: Release[] = [
 ];
 
 export const tags: Tag[] = [
-  { id: "tag-favorite", name: "Favorite" },
-  { id: "tag-late-night", name: "Late Night" },
-  { id: "tag-sample-source", name: "Sample Source" },
-  { id: "tag-needs-cleaning", name: "Needs Cleaning" },
-  { id: "tag-gift", name: "Gift" },
+  { id: "tag-favorite", name: "Favorite", color: "#d29a5a" },
+  { id: "tag-late-night", name: "Late Night", color: "#6f5368" },
+  { id: "tag-sample-source", name: "Sample Source", color: "#b9914a" },
+  { id: "tag-needs-cleaning", name: "Needs Cleaning", color: "#9e5f45" },
+  { id: "tag-gift", name: "Gift", color: "#5f6f52" },
 ];
 
 export const crates: Crate[] = [

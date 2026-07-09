@@ -344,6 +344,15 @@ Milestone 7 may add local Crate creation and editing:
 
 Do not add Discogs lookup, Supabase, authentication, sync, or image upload during Milestone 7.
 
+Milestone 8 may add local Tag creation and editing:
+
+- Tags management route from Settings
+- SQLite updates for Tag name and preset color
+- Safe Tag deletion through local `copy_tags` cleanup
+- Add Copy and Edit Copy use refreshed local Tags
+
+Do not add Discogs lookup, Supabase, authentication, or sync during Milestone 8.
+
 ---
 
 # Notes

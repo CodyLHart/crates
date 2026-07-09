@@ -70,6 +70,13 @@ Milestone 7 adds local Crate creation and editing:
 - Local updates for Crate name, description, cover behavior, and Copy membership
 - Save returns to Crate Detail with refreshed SQLite values
 
+Milestone 8 adds local Tag creation and editing:
+
+- Tags management entry point from Settings
+- Local Tag creation, editing, preset colors, and safe deletion
+- Add Copy and Edit Copy refresh local Tags after returning from management
+- Existing Copy/Tag relationships remain intact when Tag names or colors change
+
 Supabase, Discogs, authentication, sync, image upload, and cloud product features are intentionally deferred to later milestones.
 
 ---

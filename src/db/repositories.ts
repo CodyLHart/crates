@@ -47,6 +47,7 @@ type CrateRow = {
 type TagRow = {
   id: string;
   name: string;
+  color: string;
 };
 
 type JournalEntryRow = {
@@ -78,6 +79,11 @@ export type SaveCrateInput = {
   description: string;
   coverBehavior: Crate["coverBehavior"];
   copyIds: string[];
+};
+
+export type SaveTagInput = {
+  name: string;
+  color: string;
 };
 
 const copySelectSql = `
@@ -153,9 +159,43 @@ export async function listCrates() {
 export async function listTags() {
   await initializeDatabase();
   const database = await getDatabase();
-  const rows = await database.getAllAsync<TagRow>("SELECT id, name FROM tags ORDER BY name");
+  const rows = await database.getAllAsync<TagRow>("SELECT id, name, color FROM tags ORDER BY name");
 
   return rows.map(mapTag);
+}
+
+export async function createTag(input: SaveTagInput) {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const tagId = createLocalId("tag");
+
+  await database.runAsync(
+    "INSERT INTO tags (id, name, color) VALUES (?, ?, ?)",
+    tagId,
+    input.name.trim(),
+    input.color,
+  );
+
+  return tagId;
+}
+
+export async function updateTag(tagId: string, input: SaveTagInput) {
+  await initializeDatabase();
+  const database = await getDatabase();
+
+  await database.runAsync(
+    "UPDATE tags SET name = ?, color = ? WHERE id = ?",
+    input.name.trim(),
+    input.color,
+    tagId,
+  );
+}
+
+export async function deleteTag(tagId: string) {
+  await initializeDatabase();
+  const database = await getDatabase();
+
+  await database.runAsync("DELETE FROM tags WHERE id = ?", tagId);
 }
 
 export async function listCratesWithCopies(): Promise<CrateWithCopies[]> {
@@ -452,7 +492,7 @@ async function listTagsForCopy(copyId: string) {
   const database = await getDatabase();
   const rows = await database.getAllAsync<TagRow>(
     `
-      SELECT tags.id, tags.name
+      SELECT tags.id, tags.name, tags.color
       FROM tags
       INNER JOIN copy_tags ON copy_tags.tag_id = tags.id
       WHERE copy_tags.copy_id = ?
@@ -534,6 +574,7 @@ function mapTag(row: TagRow): Tag {
   return {
     id: row.id,
     name: row.name,
+    color: row.color,
   };
 }
 

@@ -4,12 +4,24 @@ import { colors, radii, spacing, typography } from "@/design/tokens";
 
 type TagPillProps = {
   label: string;
+  color?: string;
   tone?: "default" | "warm";
 };
 
-export function TagPill({ label, tone = "default" }: TagPillProps) {
+export function TagPill({ label, color, tone = "default" }: TagPillProps) {
   return (
-    <View style={[styles.pill, tone === "warm" && styles.warm]}>
+    <View
+      style={[
+        styles.pill,
+        tone === "warm" && styles.warm,
+        color
+          ? {
+              backgroundColor: `${color}24`,
+              borderColor: `${color}66`,
+            }
+          : null,
+      ]}
+    >
       <Text style={styles.label}>{label}</Text>
     </View>
   );

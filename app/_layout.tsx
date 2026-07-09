@@ -13,6 +13,7 @@ export default function RootLayout() {
       <Stack.Screen name="crate/[id]" />
       <Stack.Screen name="artist/[id]" />
       <Stack.Screen name="track/[id]" />
+      <Stack.Screen name="settings/tags" />
       <Stack.Screen name="settings/index" />
     </Stack>
   );

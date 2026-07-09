@@ -1,3 +1,4 @@
+import { Link } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -200,10 +201,14 @@ export function CopyForm({
       ) : (
         <>
           <Text style={styles.label}>Tags</Text>
+          <Link href="/settings/tags" style={styles.manageLink}>
+            Manage Tags
+          </Link>
           <View style={styles.chipRow}>
             {tags.map((tag) => (
               <ChoiceChip
                 key={tag.id}
+                color={tag.color}
                 label={tag.name}
                 selected={selectedTagIds.includes(tag.id)}
                 onPress={() => toggleSelected(tag.id, selectedTagIds, setSelectedTagIds)}
@@ -283,16 +288,30 @@ function Field({
 }
 
 function ChoiceChip({
+  color,
   label,
   selected,
   onPress,
 }: {
+  color?: string;
   label: string;
   selected: boolean;
   onPress: () => void;
 }) {
   return (
-    <Pressable onPress={onPress} style={[styles.chip, selected && styles.chipSelected]}>
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.chip,
+        color
+          ? {
+              backgroundColor: `${color}18`,
+              borderColor: `${color}55`,
+            }
+          : null,
+        selected && styles.chipSelected,
+      ]}
+    >
       <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
     </Pressable>
   );
@@ -310,6 +329,13 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.ember,
     textTransform: "uppercase",
+  },
+  manageLink: {
+    ...typography.caption,
+    alignSelf: "flex-start",
+    color: colors.cream,
+    marginTop: -spacing.sm,
+    textDecorationLine: "underline",
   },
   input: {
     ...typography.body,

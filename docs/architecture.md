@@ -71,6 +71,8 @@ Milestone 6 adds local Copy editing. The Edit Copy flow reuses the same form sur
 
 Milestone 7 adds local Crate creation and editing. Crates are still groupings of Copies, not Releases; the New/Edit Crate flows write Crate name, description, cover behavior, and `crate_copies` membership through `src/db/repositories.ts`. Cover behavior is limited to existing Copy artwork or generated placeholder artwork. Discogs lookup, Supabase, authentication, sync, and image upload remain deferred.
 
+Milestone 8 adds local Tag creation and editing. Tags are managed from Settings, store name and preset color in SQLite, and remain linked to Copies through stable Tag IDs so name/color edits preserve existing Copy relationships. Deleting a Tag is supported because `copy_tags` cascades safely and does not delete Copies. Discogs lookup, Supabase, authentication, and sync remain deferred.
+
 ---
 
 # Core Technology Choices

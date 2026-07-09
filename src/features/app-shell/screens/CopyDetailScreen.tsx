@@ -128,7 +128,7 @@ export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
               <TagPill key={crate.id} label={crate.name} tone="warm" />
             ))}
             {copy.tags.map((tag) => (
-              <TagPill key={tag.id} label={tag.name} />
+              <TagPill key={tag.id} color={tag.color} label={tag.name} />
             ))}
           </View>
         </View>

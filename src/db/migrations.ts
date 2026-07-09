@@ -155,6 +155,13 @@ const migrations = [
       ALTER TABLE crates ADD COLUMN cover_behavior TEXT NOT NULL DEFAULT 'auto';
     `,
   },
+  {
+    id: 4,
+    name: "add_tag_colors",
+    sql: `
+      ALTER TABLE tags ADD COLUMN color TEXT NOT NULL DEFAULT '#d29a5a';
+    `,
+  },
 ] as const;
 
 export async function runMigrations(database: SQLite.SQLiteDatabase) {

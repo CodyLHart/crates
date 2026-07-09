@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Link } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Screen } from "@/components/Screen";
 import { colors, radii, spacing, typography } from "@/design/tokens";
@@ -6,7 +7,7 @@ import { colors, radii, spacing, typography } from "@/design/tokens";
 const settings = [
   {
     title: "Local demo mode",
-    detail: "Supabase, SQLite, Discogs, auth, sync, and persistence are intentionally deferred.",
+    detail: "Supabase, Discogs, auth, sync, and cloud persistence are intentionally deferred.",
   },
   {
     title: "Physical collection",
@@ -29,6 +30,12 @@ export function SettingsScreen() {
       </Text>
 
       <View style={styles.stack}>
+        <Link href="/settings/tags" asChild>
+          <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+            <Text style={styles.cardTitle}>Tags</Text>
+            <Text style={styles.body}>Create, edit, and color-code local Tags.</Text>
+          </Pressable>
+        </Link>
         {settings.map((item) => (
           <View key={item.title} style={styles.card}>
             <Text style={styles.cardTitle}>{item.title}</Text>
@@ -66,6 +73,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: spacing.sm,
     padding: spacing.lg,
+  },
+  cardPressed: {
+    opacity: 0.82,
+    transform: [{ scale: 0.992 }],
   },
   cardTitle: {
     ...typography.subheading,

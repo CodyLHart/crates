@@ -3,11 +3,16 @@ import type * as SQLite from "expo-sqlite";
 import { copies, crates, journalEntries, releases, tags } from "@/constants/demoData";
 
 export async function seedDemoData(database: SQLite.SQLiteDatabase) {
+  const existingCopies = await database.getFirstAsync<{ count: number }>(
+    "SELECT COUNT(*) AS count FROM copies",
+  );
+  const shouldSeedCopyRelationships = (existingCopies?.count ?? 0) === 0;
+
   await database.withTransactionAsync(async () => {
     for (const release of releases) {
       await database.runAsync(
         `
-          INSERT OR REPLACE INTO releases (
+          INSERT OR IGNORE INTO releases (
             id,
             title,
             primary_artist_name,
@@ -37,7 +42,7 @@ export async function seedDemoData(database: SQLite.SQLiteDatabase) {
     for (const copy of copies) {
       await database.runAsync(
         `
-          INSERT OR REPLACE INTO copies (
+          INSERT OR IGNORE INTO copies (
             id,
             release_id,
             media_type,
@@ -74,7 +79,7 @@ export async function seedDemoData(database: SQLite.SQLiteDatabase) {
 
     for (const crate of crates) {
       await database.runAsync(
-        "INSERT OR REPLACE INTO crates (id, name, description, cover_behavior) VALUES (?, ?, ?, ?)",
+        "INSERT OR IGNORE INTO crates (id, name, description, cover_behavior) VALUES (?, ?, ?, ?)",
         crate.id,
         crate.name,
         crate.description,
@@ -84,55 +89,56 @@ export async function seedDemoData(database: SQLite.SQLiteDatabase) {
 
     for (const tag of tags) {
       await database.runAsync(
-        "INSERT OR REPLACE INTO tags (id, name) VALUES (?, ?)",
+        "INSERT OR IGNORE INTO tags (id, name, color) VALUES (?, ?, ?)",
         tag.id,
         tag.name,
+        tag.color,
       );
     }
 
-    await database.runAsync("DELETE FROM crate_copies");
-    for (const crate of crates) {
-      for (const [position, copyId] of crate.copyIds.entries()) {
+    if (shouldSeedCopyRelationships) {
+      for (const crate of crates) {
+        for (const [position, copyId] of crate.copyIds.entries()) {
+          await database.runAsync(
+            "INSERT OR IGNORE INTO crate_copies (crate_id, copy_id, position) VALUES (?, ?, ?)",
+            crate.id,
+            copyId,
+            position,
+          );
+        }
+      }
+
+      for (const copy of copies) {
+        for (const tagId of copy.tagIds) {
+          await database.runAsync(
+            "INSERT OR IGNORE INTO copy_tags (copy_id, tag_id) VALUES (?, ?)",
+            copy.id,
+            tagId,
+          );
+        }
+      }
+
+      for (const entry of journalEntries) {
         await database.runAsync(
-          "INSERT OR REPLACE INTO crate_copies (crate_id, copy_id, position) VALUES (?, ?, ?)",
-          crate.id,
-          copyId,
-          position,
+          `
+            INSERT OR IGNORE INTO journal_entries (
+              id,
+              copy_id,
+              type,
+              title,
+              body,
+              date
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+          `,
+          entry.id,
+          entry.copyId,
+          entry.type,
+          entry.title,
+          entry.body,
+          entry.date,
         );
       }
-    }
-
-    await database.runAsync("DELETE FROM copy_tags");
-    for (const copy of copies) {
-      for (const tagId of copy.tagIds) {
-        await database.runAsync(
-          "INSERT OR REPLACE INTO copy_tags (copy_id, tag_id) VALUES (?, ?)",
-          copy.id,
-          tagId,
-        );
-      }
-    }
-
-    for (const entry of journalEntries) {
-      await database.runAsync(
-        `
-          INSERT OR REPLACE INTO journal_entries (
-            id,
-            copy_id,
-            type,
-            title,
-            body,
-            date
-          )
-          VALUES (?, ?, ?, ?, ?, ?)
-        `,
-        entry.id,
-        entry.copyId,
-        entry.type,
-        entry.title,
-        entry.body,
-        entry.date,
-      );
     }
   });
 }
