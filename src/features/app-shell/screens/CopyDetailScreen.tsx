@@ -11,6 +11,15 @@ import { TagPill } from "@/components/TagPill";
 import { getCopyWithRelease } from "@/db/repositories";
 import { colors, radii, spacing, typography } from "@/design/tokens";
 import { useAsyncData } from "@/hooks/useAsyncData";
+import {
+  getCopyArtist,
+  getCopyArtwork,
+  getCopyFormat,
+  getCopyGenre,
+  getCopyLabel,
+  getCopyTitle,
+  getCopyYear,
+} from "@/utils/copyDisplay";
 
 type CopyDetailScreenProps = {
   copyId: string;
@@ -64,33 +73,36 @@ export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
     );
   }
 
-  const releaseYear = copy.release.year ? `${copy.release.year} · ` : "";
+  const copyYear = getCopyYear(copy);
+  const releaseYear = copyYear ? `${copyYear} · ` : "";
+  const artist = getCopyArtist(copy);
+  const artwork = getCopyArtwork(copy);
 
   return (
     <Screen>
-      <AppHeader title="Copy" subtitle={copy.release.primaryArtistName} showBack />
+      <AppHeader title="Copy" subtitle={artist} showBack />
       <AnimatedAppear>
         <View style={styles.hero}>
           <View
             style={[
               styles.heroGlow,
               {
-                backgroundColor: copy.release.artwork.backgroundColor,
+                backgroundColor: artwork.backgroundColor,
               },
             ]}
           />
-          <ArtworkTile artwork={copy.release.artwork} size="xl" />
+          <ArtworkTile artwork={artwork} size="xl" />
         </View>
       </AnimatedAppear>
 
       <AnimatedAppear delay={80}>
         <View style={styles.heroCopy}>
           <Text style={styles.eyebrow}>Now Viewing</Text>
-          <Text style={styles.title}>{copy.release.title}</Text>
-          <Text style={styles.artist}>{copy.release.primaryArtistName}</Text>
+          <Text style={styles.title}>{getCopyTitle(copy)}</Text>
+          <Text style={styles.artist}>{artist}</Text>
           <Text style={styles.body}>
             {releaseYear}
-            {copy.release.label} · {copy.release.format} · {copy.release.genre}
+            {getCopyLabel(copy)} · {getCopyFormat(copy)} · {getCopyGenre(copy)}
           </Text>
           <Link
             href={{
@@ -140,7 +152,7 @@ export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
           {copy.journalEntries.length ? (
             copy.journalEntries.map((entry) => (
               <View key={entry.id} style={styles.journalEntry}>
-                <Text style={styles.entryType}>{entry.type}</Text>
+                <Text style={styles.entryType}>{formatJournalEntryType(entry.type)}</Text>
                 <Text style={styles.entryTitle}>{entry.title}</Text>
                 <Text style={styles.body}>{entry.body}</Text>
               </View>
@@ -155,6 +167,13 @@ export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
       </AnimatedAppear>
     </Screen>
   );
+}
+
+function formatJournalEntryType(type: string) {
+  return type
+    .split("_")
+    .map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`)
+    .join(" ");
 }
 
 function Detail({ label, value }: { label: string; value: string }) {

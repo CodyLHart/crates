@@ -55,23 +55,33 @@ React Native / Expo App
 
 ## Current Milestone Implementation
 
-Milestone 2 uses local mock data only to validate the app shell and navigation experience.
+Milestone 1 scaffolded the Expo app foundation: React Native, TypeScript, Expo Router, React Native `StyleSheet`, design tokens, ESLint, Prettier, Jest, React Native Testing Library, and the initial app/source folder structure.
 
-The current runtime data source is `src/constants/demoData.ts`, which defines demo Copies, Releases, Crates, Tags, and Journal Entries. This is not persistence and should be replaced by SQLite-backed data access in a later milestone.
+Milestone 2 added the app shell and demo data: bottom tabs for Home, Collection, Crates, Journal, and Settings; a Copy detail route; local demo Copies, Releases, Crates, Tags, and Journal Entries; and reusable app-shell UI components.
 
-Supabase, Discogs, authentication, sync, and product persistence remain deferred.
+Milestone 3 refined Collection browsing: artwork-first Collection cards, concise Copy metadata, an artwork-led Copy detail presentation, and small React Native entrance animations.
 
-Milestone 3 refines only the Collection and Copy Detail presentation. It keeps `src/constants/demoData.ts` as the data source while making browsing more artwork-first, adding concise Copy metadata, and using small React Native entrance animations for context.
+Milestone 4 introduced the SQLite foundation. `src/constants/demoData.ts` now acts as seed input only; screens read through async repository functions in `src/db/`, which initialize Expo SQLite, run migrations, seed the demo Collection, and return hydrated domain objects.
 
-Milestone 4 introduces the SQLite foundation. `src/constants/demoData.ts` now acts as seed input only; screens read through async repository functions in `src/db/`, which initialize Expo SQLite, run migrations, seed the demo Collection, and return hydrated domain objects. Supabase, Discogs, authentication, sync, and editing remain deferred.
+Milestone 5 added local custom Copy creation. The Add Copy flow writes directly to SQLite through `src/db/repositories.ts`, supports unlinked Copies with nullable `release_id` and Copy-level title/artist/year overrides, and can attach existing Tags, Crates, and an initial Journal Entry.
 
-Milestone 5 adds local custom Copy creation. The Add Copy flow writes directly to SQLite through `src/db/repositories.ts`, supports unlinked Copies with nullable `release_id` and Copy-level title/artist/year overrides, and can attach existing Tags, Crates, and an initial Journal Entry. Discogs lookup, Supabase, authentication, sync, and image upload remain deferred.
+Milestone 6 added local Copy editing. The Edit Copy flow reuses the same form surface as Add Copy, reads the selected Copy through the repository layer, updates Copy override fields and Tag/Crate memberships in SQLite, and returns to the refreshed Copy Detail screen.
 
-Milestone 6 adds local Copy editing. The Edit Copy flow reuses the same form surface as Add Copy, reads the selected Copy through the repository layer, updates Copy override fields and Tag/Crate memberships in SQLite, and returns to the refreshed Copy Detail screen. Discogs lookup, Supabase, authentication, sync, and image upload remain deferred.
+Milestone 7 added local Crate management. Crates remain groupings of Copies, not Releases; the New/Edit Crate flows write Crate name, description, cover behavior, and `crate_copies` membership through `src/db/repositories.ts`. Cover behavior is limited to existing Copy artwork or generated placeholder artwork.
 
-Milestone 7 adds local Crate creation and editing. Crates are still groupings of Copies, not Releases; the New/Edit Crate flows write Crate name, description, cover behavior, and `crate_copies` membership through `src/db/repositories.ts`. Cover behavior is limited to existing Copy artwork or generated placeholder artwork. Discogs lookup, Supabase, authentication, sync, and image upload remain deferred.
+Milestone 8 added local Tag management. Tags are managed from Settings, store name and preset color in SQLite, and remain linked to Copies through stable Tag IDs so name/color edits preserve existing Copy relationships. Deleting a Tag cascades through `copy_tags` and does not delete Copies.
 
-Milestone 8 adds local Tag creation and editing. Tags are managed from Settings, store name and preset color in SQLite, and remain linked to Copies through stable Tag IDs so name/color edits preserve existing Copy relationships. Deleting a Tag is supported because `copy_tags` cascades safely and does not delete Copies. Discogs lookup, Supabase, authentication, and sync remain deferred.
+Milestone 9 stabilizes the local data layer. It reconciles milestone documentation, adds isolated repository and migration tests, adds `created_at`, `updated_at`, and `deleted_at` to local user-owned entities, makes unlinked Copy hydration truthful by returning `release: null`, stores canonical Journal Entry type values, and allows nullable release years in SQLite.
+
+Supabase, Discogs, authentication, sync, image upload, search/filtering, and Journal UI expansion remain deferred.
+
+### Milestone 9 Local Data Decisions
+
+`user_id` is not added yet. Authentication has not been implemented, and adding a placeholder local user would create migration churn without a trustworthy account identity. The schema should add `user_id` when Supabase Auth and local account/session semantics are introduced.
+
+`sync_status` is not added to every entity yet. The architecture already expects a future `sync_queue`, and a queue is a better first sync primitive because it records operations, payloads, retries, and errors without overloading each table with transient sync state. Entity-level sync metadata can be added later only if the sync implementation proves it needs it.
+
+`deleted_at` is present on user-owned entities for future sync conflict handling, but current Tag deletion remains a hard delete. Without sync, soft-deleting Tags would hide data locally while providing no recovery or cross-device value. When sync arrives, delete behavior should be revisited per entity.
 
 ---
 
@@ -117,7 +127,7 @@ Use:
 
 Rationale:
 
-- `StyleSheet` avoids Metro/runtime styling compatibility risk during the initial Expo SDK 57 scaffold.
+- `StyleSheet` avoids Metro/runtime styling compatibility risk during the initial Expo SDK 54 scaffold.
 - Design tokens keep color, spacing, typography, and radius choices consistent without introducing styling infrastructure.
 - Custom components give Crates its own visual identity.
 - A full component library may make the app feel generic.
@@ -590,54 +600,21 @@ Do not introduce:
 
 ---
 
-# Initial Implementation Milestones
+# Implemented Milestones
 
-## Milestone 1 — App Foundation
+The current implemented milestone sequence is:
 
-- Expo app
-- TypeScript
-- Expo Router
-- React Native `StyleSheet` and design tokens
-- ESLint
-- Prettier
-- Testing setup
-- Basic folder structure
+1. Milestone 1 — Expo scaffold
+2. Milestone 2 — App shell and demo data
+3. Milestone 3 — Collection browsing refinement
+4. Milestone 4 — SQLite foundation
+5. Milestone 5 — Add Copy
+6. Milestone 6 — Edit Copy
+7. Milestone 7 — Crate management
+8. Milestone 8 — Tag management
+9. Milestone 9 — Local data stabilization
 
-## Milestone 2 — Authentication Foundation
-
-- Supabase client
-- Auth screens
-- Session handling
-- Protected routes
-
-## Milestone 3 — Local Database Foundation
-
-- SQLite setup
-- Local migrations
-- Initial repositories
-- Seed/demo data
-
-## Milestone 4 — Collection Shell
-
-- Home
-- Collection
-- Copy detail
-- Crates
-- Settings
-
-## Milestone 5 — Discogs Foundation
-
-- Discogs search
-- Release normalization
-- Add Copy from release
-- Barcode search if supported
-
-## Milestone 6 — Sync Foundation
-
-- Sync queue
-- Push local changes
-- Pull remote changes
-- Basic conflict handling
+Future milestones should continue from this sequence. The next major architecture work remains authentication, Discogs integration, search/filtering, richer Journal writing, and sync, but those should be promoted into explicit milestone scopes before implementation.
 
 ---
 

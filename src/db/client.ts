@@ -10,3 +10,7 @@ export async function initializeDatabase() {
 
   return initializationPromise;
 }
+
+export function resetDatabaseInitializationForTests() {
+  initializationPromise = undefined;
+}

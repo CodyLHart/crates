@@ -9,6 +9,7 @@ import { getCopyWithRelease, listCrates, listTags, updateCopy } from "@/db/repos
 import { colors, spacing, typography } from "@/design/tokens";
 import { CopyForm, type CopyFormValues } from "@/features/app-shell/components/CopyForm";
 import { useAsyncData } from "@/hooks/useAsyncData";
+import { getCopyArtist, getCopyTitle, getCopyYear } from "@/utils/copyDisplay";
 
 type EditCopyScreenProps = {
   copyId: string;
@@ -77,10 +78,11 @@ export function EditCopyScreen({ copyId }: EditCopyScreenProps) {
   }
 
   const { copy } = data;
+  const artist = getCopyArtist(copy);
 
   return (
     <Screen>
-      <AppHeader title="Edit Copy" subtitle={copy.release.primaryArtistName} showBack />
+      <AppHeader title="Edit Copy" subtitle={artist} showBack />
       <Text style={styles.title}>Correct and personalize this Copy.</Text>
       <Text style={styles.body}>
         Changes are saved locally to this physical Copy without touching Discogs or cloud sync.
@@ -89,10 +91,10 @@ export function EditCopyScreen({ copyId }: EditCopyScreenProps) {
         crates={data.crates}
         tags={data.tags}
         initialValues={{
-          title: copy.titleOverride ?? copy.release.title,
-          artist: copy.artistOverride ?? copy.release.primaryArtistName,
+          title: getCopyTitle(copy),
+          artist,
           mediaType: copy.mediaType,
-          year: copy.yearOverride ?? copy.release.year,
+          year: getCopyYear(copy),
           conditionMedia: copy.conditionMedia,
           conditionSleeve: copy.conditionSleeve,
           rating: copy.rating,

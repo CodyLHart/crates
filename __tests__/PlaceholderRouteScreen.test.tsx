@@ -26,7 +26,7 @@ describe("demo data", () => {
     expect(release?.title).toBe("Hounds of Love");
     expect(copyCrates).toHaveLength(1);
     expect(copyTags.map((tag) => tag.name)).toContain("Gift");
-    expect(copyJournalEntries[0].type).toBe("Memory");
+    expect(copyJournalEntries[0].type).toBe("memory");
     expect(copies).toHaveLength(5);
   });
 });

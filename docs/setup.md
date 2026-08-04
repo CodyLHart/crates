@@ -272,86 +272,21 @@ Before asking Codex to scaffold the app:
 
 ---
 
-# First Implementation Task
+# Implemented Milestone History
 
-After Codex summarizes the project and the approach is approved, the first implementation task should be:
+The current project history uses this milestone sequence:
 
-```text
-Scaffold the Expo application according to docs/architecture.md and docs/setup.md.
+1. Milestone 1 — Expo scaffold
+2. Milestone 2 — App shell and demo data
+3. Milestone 3 — Collection browsing refinement
+4. Milestone 4 — SQLite foundation
+5. Milestone 5 — Add Copy
+6. Milestone 6 — Edit Copy
+7. Milestone 7 — Crate management
+8. Milestone 8 — Tag management
+9. Milestone 9 — Local data stabilization
 
-Implement Milestone 1 only:
-- Expo
-- React Native
-- TypeScript
-- Expo Router
-- React Native `StyleSheet` and design tokens
-- ESLint
-- Prettier
-- Jest
-- React Native Testing Library
-- Initial folder structure
-- Minimal placeholder screens
-
-Do not implement authentication, Supabase, SQLite, Discogs, or product features yet.
-
-After scaffolding:
-- Run the available checks
-- Fix any setup errors
-- Update README.md with local development commands
-- Summarize what changed
-```
-
-Milestone 2 may add the app shell with local demo data only:
-
-- Bottom tab navigation
-- Copy detail route
-- Local mock Copies, Releases, Crates, Tags, and Journal Entries
-- Reusable UI components
-
-Do not add Supabase, SQLite, Discogs, authentication, sync, or persistence during Milestone 2.
-
-Milestone 4 may add the SQLite foundation:
-
-- Expo SQLite
-- Local migrations under `src/db/`
-- Seeded local demo data
-- Repository/query functions for app screens
-
-Do not add Supabase, Discogs, authentication, sync, or record creation/editing during Milestone 4.
-
-Milestone 5 may add local custom Copy creation:
-
-- Add Copy route
-- Required title, artist, and media type
-- Optional condition, rating, Tags, Crates, and initial Journal note
-- SQLite insert through repository functions
-
-Do not add Discogs lookup, Supabase, authentication, sync, image upload, or editing during Milestone 5.
-
-Milestone 6 may add local Copy editing:
-
-- Edit Copy route
-- Reused Add/Edit Copy form
-- SQLite updates for Copy override fields, condition, rating, Tags, and Crates
-
-Do not add Discogs lookup, Supabase, authentication, sync, or image upload during Milestone 6.
-
-Milestone 7 may add local Crate creation and editing:
-
-- New Crate and Edit Crate routes
-- SQLite updates for Crate name, description, cover behavior, and Copy membership
-- Crates remain groupings of Copies, not Releases
-
-Do not add Discogs lookup, Supabase, authentication, sync, or image upload during Milestone 7.
-
-Milestone 8 may add local Tag creation and editing:
-
-- Tags management route from Settings
-- SQLite updates for Tag name and preset color
-- Safe Tag deletion through local `copy_tags` cleanup
-- Add Copy and Edit Copy use refreshed local Tags
-
-Do not add Discogs lookup, Supabase, authentication, or sync during Milestone 8.
+Supabase, Discogs, authentication, sync, search/filtering, image upload, and richer Journal UI remain deferred until they are promoted into explicit milestone scopes.
 
 ---
 

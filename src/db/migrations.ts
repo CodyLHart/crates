@@ -1,5 +1,4 @@
-import type * as SQLite from "expo-sqlite";
-
+import type { LocalDatabase } from "@/db/database";
 import { seedDemoData } from "@/db/seed";
 
 const migrations = [
@@ -162,9 +161,84 @@ const migrations = [
       ALTER TABLE tags ADD COLUMN color TEXT NOT NULL DEFAULT '#d29a5a';
     `,
   },
+  {
+    id: 5,
+    name: "stabilize_local_domain_schema",
+    sql: `
+      PRAGMA foreign_keys = OFF;
+
+      CREATE TABLE IF NOT EXISTS releases_next (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        primary_artist_name TEXT NOT NULL,
+        year INTEGER,
+        label TEXT NOT NULL,
+        format TEXT NOT NULL,
+        genre TEXT NOT NULL,
+        artwork_background_color TEXT NOT NULL,
+        artwork_accent_color TEXT NOT NULL,
+        artwork_initials TEXT NOT NULL
+      );
+
+      INSERT OR REPLACE INTO releases_next (
+        id,
+        title,
+        primary_artist_name,
+        year,
+        label,
+        format,
+        genre,
+        artwork_background_color,
+        artwork_accent_color,
+        artwork_initials
+      )
+      SELECT
+        id,
+        title,
+        primary_artist_name,
+        year,
+        label,
+        format,
+        genre,
+        artwork_background_color,
+        artwork_accent_color,
+        artwork_initials
+      FROM releases;
+
+      DROP TABLE releases;
+      ALTER TABLE releases_next RENAME TO releases;
+
+      ALTER TABLE copies ADD COLUMN created_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z';
+      ALTER TABLE copies ADD COLUMN updated_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z';
+      ALTER TABLE copies ADD COLUMN deleted_at TEXT;
+
+      ALTER TABLE crates ADD COLUMN created_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z';
+      ALTER TABLE crates ADD COLUMN updated_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z';
+      ALTER TABLE crates ADD COLUMN deleted_at TEXT;
+
+      ALTER TABLE tags ADD COLUMN created_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z';
+      ALTER TABLE tags ADD COLUMN updated_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z';
+      ALTER TABLE tags ADD COLUMN deleted_at TEXT;
+
+      ALTER TABLE journal_entries ADD COLUMN created_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z';
+      ALTER TABLE journal_entries ADD COLUMN updated_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z';
+      ALTER TABLE journal_entries ADD COLUMN deleted_at TEXT;
+
+      UPDATE journal_entries
+      SET type = CASE type
+        WHEN 'Memory' THEN 'memory'
+        WHEN 'Note' THEN 'note'
+        WHEN 'Listening Event' THEN 'listening_event'
+        WHEN 'Purchase' THEN 'purchase'
+        ELSE type
+      END;
+
+      PRAGMA foreign_keys = ON;
+    `,
+  },
 ] as const;
 
-export async function runMigrations(database: SQLite.SQLiteDatabase) {
+export async function runMigrations(database: LocalDatabase) {
   await database.execAsync(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
       id INTEGER PRIMARY KEY,

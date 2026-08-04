@@ -6,6 +6,7 @@ import { Screen } from "@/components/Screen";
 import { listRecentJournalEntries } from "@/db/repositories";
 import { colors, radii, spacing, typography } from "@/design/tokens";
 import { useAsyncData } from "@/hooks/useAsyncData";
+import { getCopyArtist, getCopyArtwork, getCopyTitle } from "@/utils/copyDisplay";
 
 export function JournalScreen() {
   const {
@@ -30,12 +31,12 @@ export function JournalScreen() {
         ) : recentJournalEntries.length ? (
           recentJournalEntries.map((entry) => (
             <View key={entry.id} style={styles.entry}>
-              <ArtworkTile artwork={entry.copy.release.artwork} size="sm" />
+              <ArtworkTile artwork={getCopyArtwork(entry.copy)} size="sm" />
               <View style={styles.entryBody}>
-                <Text style={styles.entryType}>{entry.type}</Text>
+                <Text style={styles.entryType}>{formatJournalEntryType(entry.type)}</Text>
                 <Text style={styles.entryTitle}>{entry.title}</Text>
                 <Text style={styles.copyName}>
-                  {entry.copy.release.primaryArtistName} · {entry.copy.release.title}
+                  {getCopyArtist(entry.copy)} · {getCopyTitle(entry.copy)}
                 </Text>
                 <Text style={styles.body}>{entry.body}</Text>
               </View>
@@ -50,6 +51,13 @@ export function JournalScreen() {
       </View>
     </Screen>
   );
+}
+
+function formatJournalEntryType(type: string) {
+  return type
+    .split("_")
+    .map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`)
+    .join(" ");
 }
 
 const styles = StyleSheet.create({

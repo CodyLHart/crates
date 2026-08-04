@@ -77,6 +77,14 @@ Milestone 8 adds local Tag creation and editing:
 - Add Copy and Edit Copy refresh local Tags after returning from management
 - Existing Copy/Tag relationships remain intact when Tag names or colors change
 
+Milestone 9 stabilizes the local data layer:
+
+- README and architecture milestone numbering are reconciled around the implemented history
+- SQLite migrations and repositories have isolated test coverage
+- Local user-owned entities include `created_at`, `updated_at`, and `deleted_at`
+- Unlinked Copies remain truthfully unlinked in the domain model instead of receiving synthetic Releases
+- Journal Entry types use canonical stored values
+
 Supabase, Discogs, authentication, sync, image upload, and cloud product features are intentionally deferred to later milestones.
 
 ---

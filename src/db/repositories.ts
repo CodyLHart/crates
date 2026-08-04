@@ -26,6 +26,9 @@ type CopyRow = {
   acquired_at: string;
   personal_note: string;
   last_played_at: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
   release_title: string | null;
   primary_artist_name: string | null;
   year: number | null;
@@ -42,12 +45,18 @@ type CrateRow = {
   name: string;
   description: string;
   cover_behavior: Crate["coverBehavior"];
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 };
 
 type TagRow = {
   id: string;
   name: string;
   color: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 };
 
 type JournalEntryRow = {
@@ -57,6 +66,9 @@ type JournalEntryRow = {
   title: string;
   body: string;
   date: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 };
 
 export type CreateCustomCopyInput = {
@@ -102,6 +114,9 @@ const copySelectSql = `
     copies.acquired_at,
     copies.personal_note,
     copies.last_played_at,
+    copies.created_at,
+    copies.updated_at,
+    copies.deleted_at,
     releases.title AS release_title,
     releases.primary_artist_name,
     releases.year,
@@ -120,6 +135,7 @@ export async function listCopies() {
   const database = await getDatabase();
   const rows = await database.getAllAsync<CopyRow>(`
     ${copySelectSql}
+    WHERE copies.deleted_at IS NULL
     ORDER BY copies.last_played_at DESC
   `);
 
@@ -133,6 +149,7 @@ export async function getCopyWithRelease(copyId: string) {
     `
       ${copySelectSql}
       WHERE copies.id = ?
+        AND copies.deleted_at IS NULL
     `,
     copyId,
   );
@@ -150,7 +167,12 @@ export async function listCrates() {
   await initializeDatabase();
   const database = await getDatabase();
   const rows = await database.getAllAsync<CrateRow>(
-    "SELECT id, name, description, cover_behavior FROM crates ORDER BY name",
+    `
+      SELECT id, name, description, cover_behavior, created_at, updated_at, deleted_at
+      FROM crates
+      WHERE deleted_at IS NULL
+      ORDER BY name
+    `,
   );
 
   return rows.map((row) => mapCrate(row, []));
@@ -159,7 +181,12 @@ export async function listCrates() {
 export async function listTags() {
   await initializeDatabase();
   const database = await getDatabase();
-  const rows = await database.getAllAsync<TagRow>("SELECT id, name, color FROM tags ORDER BY name");
+  const rows = await database.getAllAsync<TagRow>(`
+    SELECT id, name, color, created_at, updated_at, deleted_at
+    FROM tags
+    WHERE deleted_at IS NULL
+    ORDER BY name
+  `);
 
   return rows.map(mapTag);
 }
@@ -168,12 +195,16 @@ export async function createTag(input: SaveTagInput) {
   await initializeDatabase();
   const database = await getDatabase();
   const tagId = createLocalId("tag");
+  const now = new Date().toISOString();
 
   await database.runAsync(
-    "INSERT INTO tags (id, name, color) VALUES (?, ?, ?)",
+    "INSERT INTO tags (id, name, color, created_at, updated_at, deleted_at) VALUES (?, ?, ?, ?, ?, ?)",
     tagId,
     input.name.trim(),
     input.color,
+    now,
+    now,
+    null,
   );
 
   return tagId;
@@ -182,11 +213,13 @@ export async function createTag(input: SaveTagInput) {
 export async function updateTag(tagId: string, input: SaveTagInput) {
   await initializeDatabase();
   const database = await getDatabase();
+  const now = new Date().toISOString();
 
   await database.runAsync(
-    "UPDATE tags SET name = ?, color = ? WHERE id = ?",
+    "UPDATE tags SET name = ?, color = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL",
     input.name.trim(),
     input.color,
+    now,
     tagId,
   );
 }
@@ -211,7 +244,12 @@ export async function getCrateWithCopies(crateId: string): Promise<CrateWithCopi
   await initializeDatabase();
   const database = await getDatabase();
   const row = await database.getFirstAsync<CrateRow>(
-    "SELECT id, name, description, cover_behavior FROM crates WHERE id = ?",
+    `
+      SELECT id, name, description, cover_behavior, created_at, updated_at, deleted_at
+      FROM crates
+      WHERE id = ?
+        AND deleted_at IS NULL
+    `,
     crateId,
   );
 
@@ -236,14 +274,29 @@ export async function createCrate(input: SaveCrateInput) {
   await initializeDatabase();
   const database = await getDatabase();
   const crateId = createLocalId("crate");
+  const now = new Date().toISOString();
 
   await database.withTransactionAsync(async () => {
     await database.runAsync(
-      "INSERT INTO crates (id, name, description, cover_behavior) VALUES (?, ?, ?, ?)",
+      `
+        INSERT INTO crates (
+          id,
+          name,
+          description,
+          cover_behavior,
+          created_at,
+          updated_at,
+          deleted_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `,
       crateId,
       input.name.trim(),
       input.description.trim(),
       input.coverBehavior,
+      now,
+      now,
+      null,
     );
 
     await replaceCrateCopies(crateId, input.copyIds);
@@ -255,13 +308,20 @@ export async function createCrate(input: SaveCrateInput) {
 export async function updateCrate(crateId: string, input: SaveCrateInput) {
   await initializeDatabase();
   const database = await getDatabase();
+  const now = new Date().toISOString();
 
   await database.withTransactionAsync(async () => {
     await database.runAsync(
-      "UPDATE crates SET name = ?, description = ?, cover_behavior = ? WHERE id = ?",
+      `
+        UPDATE crates
+        SET name = ?, description = ?, cover_behavior = ?, updated_at = ?
+        WHERE id = ?
+          AND deleted_at IS NULL
+      `,
       input.name.trim(),
       input.description.trim(),
       input.coverBehavior,
+      now,
       crateId,
     );
 
@@ -273,8 +333,9 @@ export async function listRecentJournalEntries(): Promise<JournalEntryWithCopy[]
   await initializeDatabase();
   const database = await getDatabase();
   const rows = await database.getAllAsync<JournalEntryRow>(`
-    SELECT id, copy_id, type, title, body, date
+    SELECT id, copy_id, type, title, body, date, created_at, updated_at, deleted_at
     FROM journal_entries
+    WHERE deleted_at IS NULL
     ORDER BY date DESC
   `);
 
@@ -321,9 +382,12 @@ export async function createCustomCopy(input: CreateCustomCopyInput) {
           acquired_from,
           acquired_at,
           personal_note,
-          last_played_at
+          last_played_at,
+          created_at,
+          updated_at,
+          deleted_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       copyId,
       null,
@@ -339,6 +403,9 @@ export async function createCustomCopy(input: CreateCustomCopyInput) {
       now,
       note || "Custom Copy added locally.",
       now,
+      now,
+      now,
+      null,
     );
 
     for (const [position, crateId] of (input.crateIds ?? []).entries()) {
@@ -367,16 +434,22 @@ export async function createCustomCopy(input: CreateCustomCopyInput) {
             type,
             title,
             body,
-            date
+            date,
+            created_at,
+            updated_at,
+            deleted_at
           )
-          VALUES (?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         createLocalId("journal"),
         copyId,
-        "Note",
+        "note",
         "Initial note",
         note,
         now,
+        now,
+        now,
+        null,
       );
     }
   });
@@ -387,6 +460,7 @@ export async function createCustomCopy(input: CreateCustomCopyInput) {
 export async function updateCopy(copyId: string, input: UpdateCopyInput) {
   await initializeDatabase();
   const database = await getDatabase();
+  const now = new Date().toISOString();
   const condition = input.conditionMedia?.trim() || "Not graded";
 
   await database.withTransactionAsync(async () => {
@@ -401,8 +475,10 @@ export async function updateCopy(copyId: string, input: UpdateCopyInput) {
           condition = ?,
           condition_media = ?,
           condition_sleeve = ?,
-          rating = ?
+          rating = ?,
+          updated_at = ?
         WHERE id = ?
+          AND deleted_at IS NULL
       `,
       input.mediaType.trim(),
       input.title.trim(),
@@ -412,6 +488,7 @@ export async function updateCopy(copyId: string, input: UpdateCopyInput) {
       input.conditionMedia?.trim() || null,
       input.conditionSleeve?.trim() || null,
       input.rating ?? 0,
+      now,
       copyId,
     );
 
@@ -463,9 +540,11 @@ async function listCratesForCopy(copyId: string) {
   const rows = await database.getAllAsync<CrateRow>(
     `
       SELECT crates.id, crates.name, crates.description, crates.cover_behavior
+        , crates.created_at, crates.updated_at, crates.deleted_at
       FROM crates
       INNER JOIN crate_copies ON crate_copies.crate_id = crates.id
       WHERE crate_copies.copy_id = ?
+        AND crates.deleted_at IS NULL
       ORDER BY crate_copies.position ASC
     `,
     copyId,
@@ -493,9 +572,11 @@ async function listTagsForCopy(copyId: string) {
   const rows = await database.getAllAsync<TagRow>(
     `
       SELECT tags.id, tags.name, tags.color
+        , tags.created_at, tags.updated_at, tags.deleted_at
       FROM tags
       INNER JOIN copy_tags ON copy_tags.tag_id = tags.id
       WHERE copy_tags.copy_id = ?
+        AND tags.deleted_at IS NULL
       ORDER BY tags.name ASC
     `,
     copyId,
@@ -508,9 +589,10 @@ async function listJournalEntriesForCopy(copyId: string) {
   const database = await getDatabase();
   const rows = await database.getAllAsync<JournalEntryRow>(
     `
-      SELECT id, copy_id, type, title, body, date
+      SELECT id, copy_id, type, title, body, date, created_at, updated_at, deleted_at
       FROM journal_entries
       WHERE copy_id = ?
+        AND deleted_at IS NULL
       ORDER BY date DESC
     `,
     copyId,
@@ -537,25 +619,29 @@ function mapCopy(row: CopyRow): Copy {
     crateIds: [],
     tagIds: [],
     lastPlayedAt: row.last_played_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
   };
 }
 
-function mapRelease(row: CopyRow): Release {
-  const title = row.title_override ?? row.release_title ?? "Untitled Copy";
-  const artist = row.artist_override ?? row.primary_artist_name ?? "Unknown Artist";
+function mapRelease(row: CopyRow): Release | null {
+  if (!row.release_id || !row.release_title || !row.primary_artist_name) {
+    return null;
+  }
 
   return {
-    id: row.release_id ?? `custom-release-${row.copy_id}`,
-    title,
-    primaryArtistName: artist,
-    year: row.year_override ?? row.year,
-    label: row.label ?? "Custom",
-    format: row.media_type || row.format || "Unknown Format",
-    genre: row.genre ?? "Custom",
+    id: row.release_id,
+    title: row.release_title,
+    primaryArtistName: row.primary_artist_name,
+    year: row.year,
+    label: row.label ?? "",
+    format: row.format ?? "",
+    genre: row.genre ?? "",
     artwork: {
       backgroundColor: row.artwork_background_color ?? "#4d4037",
       accentColor: row.artwork_accent_color ?? "#d29a5a",
-      initials: row.artwork_initials ?? getArtworkInitials(title, artist),
+      initials: row.artwork_initials ?? "CR",
     },
   };
 }
@@ -567,6 +653,9 @@ function mapCrate(row: CrateRow, copyIds: string[]): Crate {
     description: row.description,
     coverBehavior: row.cover_behavior,
     copyIds,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
   };
 }
 
@@ -575,6 +664,9 @@ function mapTag(row: TagRow): Tag {
     id: row.id,
     name: row.name,
     color: row.color,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
   };
 }
 
@@ -586,18 +678,12 @@ function mapJournalEntry(row: JournalEntryRow): JournalEntry {
     title: row.title,
     body: row.body,
     date: row.date,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at,
   };
 }
 
 function createLocalId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function getArtworkInitials(title: string, artist: string) {
-  const words = `${artist} ${title}`
-    .split(/\s+/)
-    .filter((word) => word.length > 0)
-    .slice(0, 2);
-
-  return words.map((word) => word[0]?.toUpperCase()).join("") || "CR";
 }

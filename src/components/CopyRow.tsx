@@ -5,26 +5,34 @@ import { ArtworkTile } from "@/components/ArtworkTile";
 import { TagPill } from "@/components/TagPill";
 import { colors, radii, spacing, typography } from "@/design/tokens";
 import type { CopyWithRelease } from "@/types/domain";
+import {
+  getCopyArtist,
+  getCopyArtwork,
+  getCopyFormat,
+  getCopyTitle,
+  getCopyYear,
+} from "@/utils/copyDisplay";
 
 type CopyRowProps = {
   copy: CopyWithRelease;
 };
 
 export function CopyRow({ copy }: CopyRowProps) {
-  const releaseYear = copy.release.year ? `${copy.release.year} · ` : "";
+  const copyYear = getCopyYear(copy);
+  const releaseYear = copyYear ? `${copyYear} · ` : "";
 
   return (
     <Link href={`/copy/${copy.id}`} asChild>
       <Pressable style={styles.row}>
-        <ArtworkTile artwork={copy.release.artwork} size="sm" />
+        <ArtworkTile artwork={getCopyArtwork(copy)} size="sm" />
         <View style={styles.details}>
-          <Text style={styles.title}>{copy.release.title}</Text>
-          <Text style={styles.artist}>{copy.release.primaryArtistName}</Text>
+          <Text style={styles.title}>{getCopyTitle(copy)}</Text>
+          <Text style={styles.artist}>{getCopyArtist(copy)}</Text>
           <View style={styles.metaRow}>
             <TagPill label={copy.condition} tone="warm" />
             <Text style={styles.meta}>
               {releaseYear}
-              {copy.release.format}
+              {getCopyFormat(copy)}
             </Text>
           </View>
         </View>

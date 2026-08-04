@@ -1,8 +1,7 @@
-import type * as SQLite from "expo-sqlite";
-
 import { copies, crates, journalEntries, releases, tags } from "@/constants/demoData";
+import type { LocalDatabase } from "@/db/database";
 
-export async function seedDemoData(database: SQLite.SQLiteDatabase) {
+export async function seedDemoData(database: LocalDatabase) {
   const existingCopies = await database.getFirstAsync<{ count: number }>(
     "SELECT COUNT(*) AS count FROM copies",
   );
@@ -56,9 +55,12 @@ export async function seedDemoData(database: SQLite.SQLiteDatabase) {
             acquired_from,
             acquired_at,
             personal_note,
-            last_played_at
+            last_played_at,
+            created_at,
+            updated_at,
+            deleted_at
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         copy.id,
         copy.releaseId,
@@ -74,25 +76,55 @@ export async function seedDemoData(database: SQLite.SQLiteDatabase) {
         copy.acquiredAt,
         copy.personalNote,
         copy.lastPlayedAt,
+        copy.createdAt,
+        copy.updatedAt,
+        copy.deletedAt,
       );
     }
 
     for (const crate of crates) {
       await database.runAsync(
-        "INSERT OR IGNORE INTO crates (id, name, description, cover_behavior) VALUES (?, ?, ?, ?)",
+        `
+          INSERT OR IGNORE INTO crates (
+            id,
+            name,
+            description,
+            cover_behavior,
+            created_at,
+            updated_at,
+            deleted_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `,
         crate.id,
         crate.name,
         crate.description,
         crate.coverBehavior,
+        crate.createdAt,
+        crate.updatedAt,
+        crate.deletedAt,
       );
     }
 
     for (const tag of tags) {
       await database.runAsync(
-        "INSERT OR IGNORE INTO tags (id, name, color) VALUES (?, ?, ?)",
+        `
+          INSERT OR IGNORE INTO tags (
+            id,
+            name,
+            color,
+            created_at,
+            updated_at,
+            deleted_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?)
+        `,
         tag.id,
         tag.name,
         tag.color,
+        tag.createdAt,
+        tag.updatedAt,
+        tag.deletedAt,
       );
     }
 
@@ -125,11 +157,14 @@ export async function seedDemoData(database: SQLite.SQLiteDatabase) {
               id,
               copy_id,
               type,
-              title,
-              body,
-              date
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
+            title,
+            body,
+            date,
+            created_at,
+            updated_at,
+            deleted_at
+          )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
           `,
           entry.id,
           entry.copyId,
@@ -137,6 +172,9 @@ export async function seedDemoData(database: SQLite.SQLiteDatabase) {
           entry.title,
           entry.body,
           entry.date,
+          entry.createdAt,
+          entry.updatedAt,
+          entry.deletedAt,
         );
       }
     }

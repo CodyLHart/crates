@@ -1,5 +1,7 @@
 import type { Copy, Crate, JournalEntry, Release, Tag } from "@/types/domain";
 
+const seedCreatedAt = "2026-07-06T00:00:00.000Z";
+
 export const releases: Release[] = [
   {
     id: "release-blue-train",
@@ -79,7 +81,12 @@ export const tags: Tag[] = [
   { id: "tag-sample-source", name: "Sample Source", color: "#b9914a" },
   { id: "tag-needs-cleaning", name: "Needs Cleaning", color: "#9e5f45" },
   { id: "tag-gift", name: "Gift", color: "#5f6f52" },
-];
+].map((tag) => ({
+  ...tag,
+  createdAt: seedCreatedAt,
+  updatedAt: seedCreatedAt,
+  deletedAt: null,
+}));
 
 export const crates: Crate[] = [
   {
@@ -88,6 +95,9 @@ export const crates: Crate[] = [
     description: "Warm, open records for slow starts and coffee.",
     coverBehavior: "auto",
     copyIds: ["copy-blue-train", "copy-songs-key-life"],
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
   {
     id: "crate-late-night",
@@ -95,6 +105,9 @@ export const crates: Crate[] = [
     description: "Dim lights, longer sides, and records that reward attention.",
     coverBehavior: "auto",
     copyIds: ["copy-hounds-love", "copy-music-right-children"],
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
   {
     id: "crate-floor-fillers",
@@ -102,6 +115,9 @@ export const crates: Crate[] = [
     description: "Copies that make the room move without asking twice.",
     coverBehavior: "auto",
     copyIds: ["copy-sign-times", "copy-songs-key-life"],
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
 ];
 
@@ -123,6 +139,9 @@ export const copies: Copy[] = [
     crateIds: ["crate-sunday-morning"],
     tagIds: ["tag-favorite"],
     lastPlayedAt: "2026-06-28",
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
   {
     id: "copy-hounds-love",
@@ -141,6 +160,9 @@ export const copies: Copy[] = [
     crateIds: ["crate-late-night"],
     tagIds: ["tag-favorite", "tag-gift"],
     lastPlayedAt: "2026-07-01",
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
   {
     id: "copy-songs-key-life",
@@ -159,6 +181,9 @@ export const copies: Copy[] = [
     crateIds: ["crate-sunday-morning", "crate-floor-fillers"],
     tagIds: ["tag-sample-source"],
     lastPlayedAt: "2026-06-15",
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
   {
     id: "copy-music-right-children",
@@ -177,6 +202,9 @@ export const copies: Copy[] = [
     crateIds: ["crate-late-night"],
     tagIds: ["tag-late-night"],
     lastPlayedAt: "2026-05-26",
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
   {
     id: "copy-sign-times",
@@ -195,6 +223,9 @@ export const copies: Copy[] = [
     crateIds: ["crate-floor-fillers"],
     tagIds: ["tag-needs-cleaning"],
     lastPlayedAt: "2026-07-04",
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
 ];
 
@@ -202,33 +233,45 @@ export const journalEntries: JournalEntry[] = [
   {
     id: "journal-hounds-love-memory",
     copyId: "copy-hounds-love",
-    type: "Memory",
+    type: "memory",
     title: "Rainy drive home",
     body: "Bought on the first cold night of the season and played before it even made the shelf.",
     date: "2026-07-02",
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
   {
     id: "journal-sign-times-listen",
     copyId: "copy-sign-times",
-    type: "Listening Event",
+    type: "listening_event",
     title: "Side C still wins",
     body: "Pulled this for friends and forgot how quickly the second disc takes over the room.",
     date: "2026-07-04",
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
   {
     id: "journal-blue-train-note",
     copyId: "copy-blue-train",
-    type: "Note",
+    type: "note",
     title: "Clean before next play",
     body: "Sounds beautiful, but the first track has a little dust in the quiet passages.",
     date: "2026-06-29",
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
   {
     id: "journal-songs-purchase",
     copyId: "copy-songs-key-life",
-    type: "Purchase",
+    type: "purchase",
     title: "Found in a kitchen box",
     body: "The seller almost kept it. Glad they did not.",
     date: "2022-08-14",
+    createdAt: seedCreatedAt,
+    updatedAt: seedCreatedAt,
+    deletedAt: null,
   },
 ];

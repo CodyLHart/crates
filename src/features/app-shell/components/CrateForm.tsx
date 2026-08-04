@@ -5,6 +5,7 @@ import { ArtworkTile } from "@/components/ArtworkTile";
 import { EmptyState } from "@/components/EmptyState";
 import { colors, radii, spacing, typography } from "@/design/tokens";
 import type { CopyWithRelease, Crate } from "@/types/domain";
+import { getCopyArtist, getCopyArtwork, getCopyFormat, getCopyTitle } from "@/utils/copyDisplay";
 
 export type CrateFormValues = {
   name: string;
@@ -119,12 +120,12 @@ export function CrateForm({
                   selectedCopyIds.includes(copy.id) && styles.copyChoiceSelected,
                 ]}
               >
-                <ArtworkTile artwork={copy.release.artwork} size="sm" />
+                <ArtworkTile artwork={getCopyArtwork(copy)} size="sm" />
                 <View style={styles.copyText}>
-                  <Text style={styles.copyTitle}>{copy.release.title}</Text>
-                  <Text style={styles.copyArtist}>{copy.release.primaryArtistName}</Text>
+                  <Text style={styles.copyTitle}>{getCopyTitle(copy)}</Text>
+                  <Text style={styles.copyArtist}>{getCopyArtist(copy)}</Text>
                   <Text style={styles.copyMeta}>
-                    {copy.condition} · {copy.release.format}
+                    {copy.condition} · {getCopyFormat(copy)}
                   </Text>
                 </View>
               </Pressable>

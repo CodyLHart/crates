@@ -5,6 +5,13 @@ import { ArtworkTile } from "@/components/ArtworkTile";
 import { TagPill } from "@/components/TagPill";
 import { colors, radii, spacing, typography } from "@/design/tokens";
 import type { CopyWithRelease } from "@/types/domain";
+import {
+  getCopyArtist,
+  getCopyArtwork,
+  getCopyFormat,
+  getCopyGenre,
+  getCopyTitle,
+} from "@/utils/copyDisplay";
 
 type CollectionCopyCardProps = {
   copy: CopyWithRelease;
@@ -12,6 +19,11 @@ type CollectionCopyCardProps = {
 };
 
 export function CollectionCopyCard({ copy, featured = false }: CollectionCopyCardProps) {
+  const title = getCopyTitle(copy);
+  const artist = getCopyArtist(copy);
+  const format = getCopyFormat(copy);
+  const genre = getCopyGenre(copy);
+
   return (
     <Link href={`/copy/${copy.id}`} asChild>
       <Pressable
@@ -21,14 +33,14 @@ export function CollectionCopyCard({ copy, featured = false }: CollectionCopyCar
           pressed && styles.cardPressed,
         ]}
       >
-        <ArtworkTile artwork={copy.release.artwork} size={featured ? "lg" : "md"} />
+        <ArtworkTile artwork={getCopyArtwork(copy)} size={featured ? "lg" : "md"} />
         <View style={styles.copy}>
-          <Text style={featured ? styles.featuredTitle : styles.title}>{copy.release.title}</Text>
-          <Text style={styles.artist}>{copy.release.primaryArtistName}</Text>
+          <Text style={featured ? styles.featuredTitle : styles.title}>{title}</Text>
+          <Text style={styles.artist}>{artist}</Text>
           <View style={styles.metaRow}>
-            <TagPill label={copy.release.genre} tone="warm" />
+            <TagPill label={genre} tone="warm" />
             <Text style={styles.meta}>
-              {copy.condition} · {copy.release.format}
+              {copy.condition} · {format}
             </Text>
           </View>
           {featured ? <Text style={styles.note}>{copy.personalNote}</Text> : null}

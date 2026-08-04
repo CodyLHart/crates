@@ -15,6 +15,8 @@ export type Release = {
   artwork: ArtworkSwatch;
 };
 
+export type JournalEntryType = "note" | "memory" | "listening_event" | "purchase";
+
 export type Copy = {
   id: string;
   releaseId: string | null;
@@ -32,6 +34,9 @@ export type Copy = {
   crateIds: string[];
   tagIds: string[];
   lastPlayedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 };
 
 export type Crate = {
@@ -40,25 +45,34 @@ export type Crate = {
   description: string;
   coverBehavior: "auto" | "generated";
   copyIds: string[];
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 };
 
 export type Tag = {
   id: string;
   name: string;
   color: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 };
 
 export type JournalEntry = {
   id: string;
   copyId: string;
-  type: "Memory" | "Note" | "Listening Event" | "Purchase";
+  type: JournalEntryType;
   title: string;
   body: string;
   date: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 };
 
 export type CopyWithRelease = Copy & {
-  release: Release;
+  release: Release | null;
   crates: Crate[];
   tags: Tag[];
   journalEntries: JournalEntry[];

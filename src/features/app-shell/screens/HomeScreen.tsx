@@ -9,6 +9,7 @@ import { TagPill } from "@/components/TagPill";
 import { listCopies, listRecentJournalEntries } from "@/db/repositories";
 import { colors, radii, spacing, typography } from "@/design/tokens";
 import { useAsyncData } from "@/hooks/useAsyncData";
+import { getCopyArtwork, getCopyTitle } from "@/utils/copyDisplay";
 
 export function HomeScreen() {
   const { data, error, isLoading } = useAsyncData(async () => {
@@ -42,7 +43,7 @@ export function HomeScreen() {
             <Text style={styles.eyebrow}>Rediscover</Text>
             <Text style={styles.title}>Spend a minute with a Copy you already love.</Text>
             <Text style={styles.body}>
-              {featuredCopy.release.title} has a fresh Journal memory and belongs in{" "}
+              {getCopyTitle(featuredCopy)} has a fresh Journal memory and belongs in{" "}
               {featuredCopy.crates[0]?.name ?? "your Collection"}.
             </Text>
             <View style={styles.tagRow}>
@@ -51,7 +52,7 @@ export function HomeScreen() {
               ))}
             </View>
           </View>
-          <ArtworkTile artwork={featuredCopy.release.artwork} size="lg" />
+          <ArtworkTile artwork={getCopyArtwork(featuredCopy)} size="lg" />
         </View>
       ) : (
         <EmptyState
@@ -70,7 +71,7 @@ export function HomeScreen() {
       <SectionHeader eyebrow="Journal" title="Collection moments" />
       {recentJournalEntry ? (
         <View style={styles.journalCard}>
-          <Text style={styles.journalType}>{recentJournalEntry.type}</Text>
+          <Text style={styles.journalType}>{formatJournalEntryType(recentJournalEntry.type)}</Text>
           <Text style={styles.journalTitle}>{recentJournalEntry.title}</Text>
           <Text style={styles.body}>{recentJournalEntry.body}</Text>
         </View>
@@ -82,6 +83,13 @@ export function HomeScreen() {
       )}
     </Screen>
   );
+}
+
+function formatJournalEntryType(type: string) {
+  return type
+    .split("_")
+    .map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`)
+    .join(" ");
 }
 
 const styles = StyleSheet.create({
