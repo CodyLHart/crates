@@ -3,7 +3,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
-import { Screen } from "@/components/Screen";
+import { FormScreen } from "@/components/FormScreen";
 import { TagPill } from "@/components/TagPill";
 import { createTag, deleteTag, listTags, updateTag } from "@/db/repositories";
 import { colors, radii, spacing, typography } from "@/design/tokens";
@@ -73,7 +73,7 @@ export function TagsManagementScreen() {
   }
 
   return (
-    <Screen>
+    <FormScreen>
       <AppHeader title="Tags" subtitle="Manage your local tagging system" showBack />
       <Text style={styles.title}>Shape the labels that make your Collection yours.</Text>
       <Text style={styles.body}>
@@ -138,7 +138,7 @@ export function TagsManagementScreen() {
           <EmptyState title="No Tags yet" body="Create Tags to label Copies by mood or purpose." />
         )}
       </View>
-    </Screen>
+    </FormScreen>
   );
 }
 

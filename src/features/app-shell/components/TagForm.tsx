@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { colors, radii, spacing, typography } from "@/design/tokens";
 import type { Tag } from "@/types/domain";
@@ -62,9 +62,12 @@ export function TagForm({
       <View style={styles.field}>
         <Text style={styles.label}>Name</Text>
         <TextInput
+          accessibilityLabel="Name"
           onChangeText={setName}
+          onSubmitEditing={() => Keyboard.dismiss()}
           placeholder="Tag name"
           placeholderTextColor={colors.inkMuted}
+          returnKeyType="done"
           style={styles.input}
           value={name}
         />

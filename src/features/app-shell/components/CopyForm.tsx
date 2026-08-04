@@ -1,6 +1,7 @@
 import { Link } from "expo-router";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardController } from "react-native-keyboard-controller";
 
 import { EmptyState } from "@/components/EmptyState";
 import { colors, radii, spacing, typography } from "@/design/tokens";
@@ -132,8 +133,15 @@ export function CopyForm({
         value={title}
         onChangeText={setTitle}
         placeholder="Album or release title"
+        returnKeyType="next"
       />
-      <Field label="Artist" value={artist} onChangeText={setArtist} placeholder="Primary artist" />
+      <Field
+        label="Artist"
+        value={artist}
+        onChangeText={setArtist}
+        placeholder="Primary artist"
+        returnKeyType="next"
+      />
 
       <Text style={styles.label}>Media type</Text>
       <View style={styles.chipRow}>
@@ -153,6 +161,7 @@ export function CopyForm({
         onChangeText={setYear}
         placeholder="Optional"
         keyboardType="number-pad"
+        returnKeyType={showInitialJournalNote ? "next" : "done"}
       />
 
       <Text style={styles.label}>Media condition</Text>
@@ -261,6 +270,7 @@ type FieldProps = {
   placeholder: string;
   keyboardType?: "default" | "number-pad";
   multiline?: boolean;
+  returnKeyType?: "next" | "done" | "default";
 };
 
 function Field({
@@ -270,16 +280,34 @@ function Field({
   placeholder,
   keyboardType = "default",
   multiline = false,
+  returnKeyType = "default",
 }: FieldProps) {
+  function submitEditing() {
+    if (multiline) {
+      return;
+    }
+
+    if (returnKeyType === "next") {
+      KeyboardController.setFocusTo("next");
+      return;
+    }
+
+    Keyboard.dismiss();
+  }
+
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        accessibilityLabel={label}
+        blurOnSubmit={!multiline}
         keyboardType={keyboardType}
         multiline={multiline}
         onChangeText={onChangeText}
+        onSubmitEditing={submitEditing}
         placeholder={placeholder}
         placeholderTextColor={colors.inkMuted}
+        returnKeyType={multiline ? "default" : returnKeyType}
         style={[styles.input, multiline && styles.multilineInput]}
         value={value}
       />

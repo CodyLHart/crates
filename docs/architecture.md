@@ -77,6 +77,8 @@ Milestone 10 adds local Collection search, filter, and sort. Collection queries 
 
 Milestone 11 adds local Journal creation, editing, and deletion. Journal Entries remain Copy-owned, are stored in SQLite, can be created from Copy Detail or the Journal tab, can be edited through stable IDs, and are removed from normal queries through `deleted_at` soft deletion. The Journal tab now acts as a real local timeline surface ordered by `occurred_at`.
 
+Milestone 11.5 adds the keyboard and form UX foundation. Form screens share `src/components/FormScreen.tsx`, which wraps content in `KeyboardAwareScrollView`, keeps primary actions inside scrollable content, adds a keyboard toolbar with Done plus Previous/Next controls, and accounts for safe-area insets and toolbar height. The root layout provides a single `KeyboardProvider`, and tabs hide while the keyboard is open.
+
 Supabase, Discogs, authentication, sync, image upload, photos, voice memos, AI insights, and automated listening history remain deferred.
 
 ### Milestone 9 Local Data Decisions
@@ -100,6 +102,16 @@ Journal Entries use the canonical lowercase entry types from the domain model: `
 Journal deletion uses `deleted_at` soft deletion because Journal Entries are user-authored history and are likely sync-owned in a future milestone. Soft-deleted entries are excluded from normal list, get, and Copy-specific repository queries.
 
 Track association is deferred. The current local model has no Track table or clean Track ownership semantics, so adding nullable track fields in the UI would create a misleading relationship before the data model can support it well.
+
+### Milestone 11.5 Keyboard Decisions
+
+`react-native-keyboard-controller` is used because it provides Expo-compatible primitives for keyboard-aware scrolling, focused-input tracking, and a keyboard toolbar without introducing a second keyboard-handling package. It was installed with `pnpm expo install react-native-keyboard-controller`, which resolved the Expo SDK 54-compatible version.
+
+The app uses one `KeyboardProvider` at the root Expo Router layout. Individual screens should not add their own providers.
+
+Form screens should use `FormScreen` instead of `Screen`. Primary save/create/delete actions stay inside the keyboard-aware scroll content with normal bottom spacing when the keyboard is closed and keyboard-aware padding when it is open.
+
+Collection search remains on the normal Collection screen but dismisses the keyboard from the search return key and drag gestures. It does not use the form wrapper because Collection is still a browsing surface rather than a form.
 
 ---
 
@@ -633,6 +645,7 @@ The current implemented milestone sequence is:
 9. Milestone 9 — Local data stabilization
 10. Milestone 10 — Collection search, filter, and sort
 11. Milestone 11 — Journal creation, editing, and deletion
+    11.5. Milestone 11.5 — Keyboard and form UX foundation
 
 Future milestones should continue from this sequence. The next major architecture work remains authentication, Discogs integration, richer Journal media, automated listening history, and sync, but those should be promoted into explicit milestone scopes before implementation.
 

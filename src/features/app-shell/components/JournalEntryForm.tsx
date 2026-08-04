@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardController } from "react-native-keyboard-controller";
 
 import { ArtworkTile } from "@/components/ArtworkTile";
 import { EmptyState } from "@/components/EmptyState";
@@ -167,7 +168,13 @@ export function JournalEntryForm({
         ))}
       </View>
 
-      <Field label="Title" value={title} onChangeText={setTitle} placeholder="Optional" />
+      <Field
+        label="Title"
+        value={title}
+        onChangeText={setTitle}
+        placeholder="Optional"
+        returnKeyType="next"
+      />
       <Field
         label="Description"
         value={body}
@@ -180,6 +187,7 @@ export function JournalEntryForm({
         value={occurredAt}
         onChangeText={setOccurredAt}
         placeholder="YYYY-MM-DD HH:MM"
+        returnKeyType="done"
       />
 
       {validationError ? <Text style={styles.error}>{validationError}</Text> : null}
@@ -227,21 +235,40 @@ function Field({
   onChangeText,
   placeholder,
   multiline = false,
+  returnKeyType = "default",
 }: {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
   placeholder: string;
   multiline?: boolean;
+  returnKeyType?: "next" | "done" | "default";
 }) {
+  function submitEditing() {
+    if (multiline) {
+      return;
+    }
+
+    if (returnKeyType === "next") {
+      KeyboardController.setFocusTo("next");
+      return;
+    }
+
+    Keyboard.dismiss();
+  }
+
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        accessibilityLabel={label}
+        blurOnSubmit={!multiline}
         multiline={multiline}
         onChangeText={onChangeText}
+        onSubmitEditing={submitEditing}
         placeholder={placeholder}
         placeholderTextColor={colors.inkMuted}
+        returnKeyType={multiline ? "default" : returnKeyType}
         style={[styles.input, multiline && styles.multilineInput]}
         value={value}
       />

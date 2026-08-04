@@ -195,6 +195,7 @@ Expected stack:
 - TypeScript
 - Expo Router
 - React Native `StyleSheet` and design tokens
+- React Native Keyboard Controller
 - Jest
 - React Native Testing Library
 - ESLint
@@ -287,8 +288,21 @@ The current project history uses this milestone sequence:
 9. Milestone 9 — Local data stabilization
 10. Milestone 10 — Collection search, filter, and sort
 11. Milestone 11 — Journal creation, editing, and deletion
+    11.5. Milestone 11.5 — Keyboard and form UX foundation
 
 Supabase, Discogs, authentication, sync, image upload, photos, voice memos, AI insights, and automated listening history remain deferred until they are promoted into explicit milestone scopes.
+
+## Keyboard-Aware Forms
+
+Form screens should use `src/components/FormScreen.tsx`.
+
+`FormScreen` uses `react-native-keyboard-controller` through Expo Go with the project's Expo SDK 54 dependency set. Install or repair the package with:
+
+```bash
+pnpm expo install react-native-keyboard-controller
+```
+
+Do not add another keyboard-handling package unless a future platform issue is documented.
 
 ---
 

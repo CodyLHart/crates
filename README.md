@@ -100,6 +100,14 @@ Milestone 11 adds local Journal creation, editing, and deletion:
 - Journal repositories support list, get, create, update, soft delete, and Copy-specific queries
 - Journal timing uses `occurred_at`; the legacy `date` column remains for local migration compatibility
 
+Milestone 11.5 adds the keyboard and form UX foundation:
+
+- Form screens use a shared keyboard-aware scroll wrapper
+- `react-native-keyboard-controller` is installed through Expo's SDK 54 dependency resolver
+- A keyboard toolbar provides an accessible Done action plus native Previous/Next input navigation
+- Primary form actions remain inside scrollable content with safe-area-aware bottom spacing
+- The bottom tab bar hides while the keyboard is open
+
 Supabase, Discogs, authentication, sync, image upload, and cloud product features are intentionally deferred to later milestones.
 
 ---
@@ -127,6 +135,7 @@ Start here:
 - Expo Router
 - React Native `StyleSheet` and design tokens
 - SQLite
+- React Native Keyboard Controller
 - Supabase
 - Discogs API
 

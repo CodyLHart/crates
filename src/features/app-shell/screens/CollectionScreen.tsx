@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Link, useFocusEffect } from "expo-router";
 import type { ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { AnimatedAppear } from "@/components/AnimatedAppear";
 import { AppHeader } from "@/components/AppHeader";
@@ -130,8 +130,10 @@ export function CollectionScreen() {
               autoCapitalize="none"
               autoCorrect={false}
               onChangeText={setSearch}
+              onSubmitEditing={() => Keyboard.dismiss()}
               placeholder="Search Copies, artists, Tags, Crates"
               placeholderTextColor={colors.inkMuted}
+              returnKeyType="search"
               style={styles.searchInput}
               value={search}
             />

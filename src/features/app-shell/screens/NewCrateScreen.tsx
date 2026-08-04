@@ -3,7 +3,7 @@ import { useState } from "react";
 import { StyleSheet, Text } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
-import { Screen } from "@/components/Screen";
+import { FormScreen } from "@/components/FormScreen";
 import { createCrate, listCopies } from "@/db/repositories";
 import { colors, spacing, typography } from "@/design/tokens";
 import { CrateForm, type CrateFormValues } from "@/features/app-shell/components/CrateForm";
@@ -29,7 +29,7 @@ export function NewCrateScreen() {
   }
 
   return (
-    <Screen>
+    <FormScreen>
       <AppHeader title="New Crate" subtitle="Gather Copies around a purpose" showBack />
       <Text style={styles.title}>Create a flexible place for listening.</Text>
       <Text style={styles.body}>
@@ -44,7 +44,7 @@ export function NewCrateScreen() {
         submitLabel="Save Crate"
         onSubmit={saveCrate}
       />
-    </Screen>
+    </FormScreen>
   );
 }
 

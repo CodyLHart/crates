@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { StyleSheet, Text } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
-import { Screen } from "@/components/Screen";
+import { FormScreen } from "@/components/FormScreen";
 import { createCustomCopy, listCrates, listTags } from "@/db/repositories";
 import { colors, spacing, typography } from "@/design/tokens";
 import { CopyForm, type CopyFormValues } from "@/features/app-shell/components/CopyForm";
@@ -42,7 +42,7 @@ export function AddCopyScreen() {
   }
 
   return (
-    <Screen>
+    <FormScreen>
       <AppHeader title="Add Copy" subtitle="Create a local custom Copy" showBack />
       <Text style={styles.title}>Add the record in your hand.</Text>
       <Text style={styles.body}>
@@ -59,7 +59,7 @@ export function AddCopyScreen() {
         submitLabel="Save Copy"
         onSubmit={saveCopy}
       />
-    </Screen>
+    </FormScreen>
   );
 }
 

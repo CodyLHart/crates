@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
-import { Screen } from "@/components/Screen";
+import { FormScreen } from "@/components/FormScreen";
 import { createJournalEntry, listCopies, type SaveJournalEntryInput } from "@/db/repositories";
 import { useAsyncData } from "@/hooks/useAsyncData";
 
@@ -36,7 +36,7 @@ export function AddJournalEntryScreen({ copyId }: AddJournalEntryScreenProps) {
   }
 
   return (
-    <Screen>
+    <FormScreen>
       <AppHeader title="New Journal Entry" subtitle="Save a Copy moment locally" showBack />
       {!isLoading && !error && copies.length === 0 ? (
         <EmptyState
@@ -55,6 +55,6 @@ export function AddJournalEntryScreen({ copyId }: AddJournalEntryScreenProps) {
           onSubmit={save}
         />
       )}
-    </Screen>
+    </FormScreen>
   );
 }

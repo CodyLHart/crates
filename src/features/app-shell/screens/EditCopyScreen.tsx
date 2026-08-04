@@ -4,6 +4,7 @@ import { StyleSheet, Text } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { FormScreen } from "@/components/FormScreen";
 import { Screen } from "@/components/Screen";
 import { getCopyWithRelease, listCrates, listTags, updateCopy } from "@/db/repositories";
 import { colors, spacing, typography } from "@/design/tokens";
@@ -81,7 +82,7 @@ export function EditCopyScreen({ copyId }: EditCopyScreenProps) {
   const artist = getCopyArtist(copy);
 
   return (
-    <Screen>
+    <FormScreen>
       <AppHeader title="Edit Copy" subtitle={artist} showBack />
       <Text style={styles.title}>Correct and personalize this Copy.</Text>
       <Text style={styles.body}>
@@ -106,7 +107,7 @@ export function EditCopyScreen({ copyId }: EditCopyScreenProps) {
         submitLabel="Save Changes"
         onSubmit={saveCopy}
       />
-    </Screen>
+    </FormScreen>
   );
 }
 

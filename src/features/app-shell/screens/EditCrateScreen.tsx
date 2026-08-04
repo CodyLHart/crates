@@ -4,6 +4,7 @@ import { StyleSheet, Text } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { FormScreen } from "@/components/FormScreen";
 import { Screen } from "@/components/Screen";
 import { getCrateWithCopies, listCopies, updateCrate } from "@/db/repositories";
 import { colors, spacing, typography } from "@/design/tokens";
@@ -67,7 +68,7 @@ export function EditCrateScreen({ crateId }: EditCrateScreenProps) {
   const { crate } = data.crateGroup;
 
   return (
-    <Screen>
+    <FormScreen>
       <AppHeader title="Edit Crate" subtitle={crate.name} showBack />
       <Text style={styles.title}>Keep this Crate tuned to how you listen.</Text>
       <Text style={styles.body}>
@@ -86,7 +87,7 @@ export function EditCrateScreen({ crateId }: EditCrateScreenProps) {
         submitLabel="Save Changes"
         onSubmit={saveCrate}
       />
-    </Screen>
+    </FormScreen>
   );
 }
 

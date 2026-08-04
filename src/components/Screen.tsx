@@ -22,7 +22,12 @@ export function Screen({ children, scroll = true }: ScreenProps) {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {children}
       </ScrollView>
     </View>

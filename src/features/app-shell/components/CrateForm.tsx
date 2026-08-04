@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardController } from "react-native-keyboard-controller";
 
 import { ArtworkTile } from "@/components/ArtworkTile";
 import { EmptyState } from "@/components/EmptyState";
@@ -79,7 +80,13 @@ export function CrateForm({
 
   return (
     <View style={styles.form}>
-      <Field label="Name" value={name} onChangeText={setName} placeholder="Crate name" />
+      <Field
+        label="Name"
+        value={name}
+        onChangeText={setName}
+        placeholder="Crate name"
+        returnKeyType="next"
+      />
       <Field
         label="Description"
         value={description}
@@ -156,17 +163,42 @@ type FieldProps = {
   onChangeText: (value: string) => void;
   placeholder: string;
   multiline?: boolean;
+  returnKeyType?: "next" | "done" | "default";
 };
 
-function Field({ label, value, onChangeText, placeholder, multiline = false }: FieldProps) {
+function Field({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline = false,
+  returnKeyType = "default",
+}: FieldProps) {
+  function submitEditing() {
+    if (multiline) {
+      return;
+    }
+
+    if (returnKeyType === "next") {
+      KeyboardController.setFocusTo("next");
+      return;
+    }
+
+    Keyboard.dismiss();
+  }
+
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        accessibilityLabel={label}
+        blurOnSubmit={!multiline}
         multiline={multiline}
         onChangeText={onChangeText}
+        onSubmitEditing={submitEditing}
         placeholder={placeholder}
         placeholderTextColor={colors.inkMuted}
+        returnKeyType={multiline ? "default" : returnKeyType}
         style={[styles.input, multiline && styles.multilineInput]}
         value={value}
       />

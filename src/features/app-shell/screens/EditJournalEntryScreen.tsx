@@ -4,6 +4,7 @@ import { Alert } from "react-native";
 
 import { AppHeader } from "@/components/AppHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { FormScreen } from "@/components/FormScreen";
 import { Screen } from "@/components/Screen";
 import {
   getJournalEntry,
@@ -102,7 +103,7 @@ export function EditJournalEntryScreen({
   }
 
   return (
-    <Screen>
+    <FormScreen>
       <AppHeader title="Edit Journal Entry" subtitle="Update this Copy moment" showBack />
       <JournalEntryForm
         copies={copies}
@@ -123,7 +124,7 @@ export function EditJournalEntryScreen({
         submitLabel="Save Changes"
         onSubmit={save}
       />
-    </Screen>
+    </FormScreen>
   );
 
   function navigateAfterSave(copyId: string) {
