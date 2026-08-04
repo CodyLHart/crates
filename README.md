@@ -85,6 +85,13 @@ Milestone 9 stabilizes the local data layer:
 - Unlinked Copies remain truthfully unlinked in the domain model instead of receiving synthetic Releases
 - Journal Entry types use canonical stored values
 
+Milestone 10 adds local Collection search, filter, and sort:
+
+- Collection search queries SQLite across Copy overrides, linked Release title/artist, Tags, and Crates
+- Filters support media type, media condition, sleeve condition, rating, Tags, Crates, and linked/custom Copies
+- Sort defaults to recently added, with title, artist, year, and rating options
+- Normal SQLite queries and targeted indexes are used; FTS remains deferred until collection scale proves it necessary
+
 Supabase, Discogs, authentication, sync, image upload, and cloud product features are intentionally deferred to later milestones.
 
 ---

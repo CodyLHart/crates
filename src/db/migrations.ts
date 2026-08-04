@@ -236,6 +236,22 @@ const migrations = [
       PRAGMA foreign_keys = ON;
     `,
   },
+  {
+    id: 6,
+    name: "add_collection_query_indexes",
+    sql: `
+      CREATE INDEX IF NOT EXISTS idx_copies_deleted_at ON copies(deleted_at);
+      CREATE INDEX IF NOT EXISTS idx_copies_created_at ON copies(created_at);
+      CREATE INDEX IF NOT EXISTS idx_copies_media_type ON copies(media_type);
+      CREATE INDEX IF NOT EXISTS idx_copies_condition_media ON copies(condition_media);
+      CREATE INDEX IF NOT EXISTS idx_copies_condition_sleeve ON copies(condition_sleeve);
+      CREATE INDEX IF NOT EXISTS idx_copies_rating ON copies(rating);
+      CREATE INDEX IF NOT EXISTS idx_copies_release_id ON copies(release_id);
+      CREATE INDEX IF NOT EXISTS idx_crate_copies_copy_id ON crate_copies(copy_id);
+      CREATE INDEX IF NOT EXISTS idx_copy_tags_tag_id ON copy_tags(tag_id);
+      CREATE INDEX IF NOT EXISTS idx_journal_entries_copy_id ON journal_entries(copy_id);
+    `,
+  },
 ] as const;
 
 export async function runMigrations(database: LocalDatabase) {

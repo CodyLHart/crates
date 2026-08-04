@@ -159,19 +159,21 @@ export class InMemoryDatabase implements LocalDatabase {
     }
 
     if (sql.includes("FROM copies")) {
-      return this.copyRows().sort(sortByString("last_played_at", "desc")) as T[];
+      return this.collectionCopyRows(sql, params) as T[];
     }
 
     if (sql.includes("FROM crates") && sql.includes("INNER JOIN crate_copies")) {
-      const copyId = params[0];
+      const copyIds = params;
       const crateIds = this.tables.crate_copies
-        .filter((row) => row.copy_id === copyId)
+        .filter((row) => copyIds.includes(row.copy_id))
         .sort(sortByNumber("position"))
-        .map((row) => row.crate_id);
+        .map((row) => ({ crateId: row.crate_id, copyId: row.copy_id }));
 
-      return crateIds
-        .map((crateId) => this.visibleRows("crates").find((crate) => crate.id === crateId))
-        .filter(Boolean) as T[];
+      return crateIds.flatMap(({ crateId, copyId }) => {
+        const crate = this.visibleRows("crates").find((crate) => crate.id === crateId);
+
+        return crate ? [{ ...crate, copy_id: copyId }] : [];
+      }) as T[];
     }
 
     if (sql.includes("FROM crates")) {
@@ -179,13 +181,15 @@ export class InMemoryDatabase implements LocalDatabase {
     }
 
     if (sql.includes("FROM tags") && sql.includes("INNER JOIN copy_tags")) {
-      const copyId = params[0];
-      const tagIds = this.tables.copy_tags
-        .filter((row) => row.copy_id === copyId)
-        .map((row) => row.tag_id);
+      const copyIds = params;
+      const joins = this.tables.copy_tags.filter((row) => copyIds.includes(row.copy_id));
 
-      return this.visibleRows("tags")
-        .filter((tag) => tagIds.includes(tag.id))
+      return joins
+        .flatMap((join) => {
+          const tag = this.visibleRows("tags").find((tag) => tag.id === join.tag_id);
+
+          return tag ? [{ ...tag, copy_id: join.copy_id }] : [];
+        })
         .sort(sortByString("name")) as T[];
     }
 
@@ -195,7 +199,7 @@ export class InMemoryDatabase implements LocalDatabase {
 
     if (sql.includes("FROM journal_entries") && sql.includes("WHERE copy_id")) {
       return this.visibleRows("journal_entries")
-        .filter((entry) => entry.copy_id === params[0])
+        .filter((entry) => params.includes(entry.copy_id))
         .sort(sortByString("date", "desc")) as T[];
     }
 
@@ -515,6 +519,121 @@ export class InMemoryDatabase implements LocalDatabase {
       };
     });
   }
+
+  private collectionCopyRows(sql: string, params: unknown[]) {
+    let rows = this.copyRows();
+    let paramIndex = 0;
+
+    if (sql.includes("LIKE ? ESCAPE")) {
+      const search = unescapeLikePattern(String(params[paramIndex]).slice(1, -1));
+      paramIndex += 6;
+
+      rows = rows.filter((copy) => {
+        const copyId = String(copy.copy_id);
+        const fields = [
+          copy.title_override,
+          copy.artist_override,
+          copy.release_title,
+          copy.primary_artist_name,
+          ...this.tagsForCopy(copyId).map((tag) => tag.name),
+          ...this.cratesForCopy(copyId).map((crate) => crate.name),
+        ];
+
+        return fields.some((field) =>
+          String(field ?? "")
+            .toLocaleLowerCase()
+            .includes(search),
+        );
+      });
+    }
+
+    if (sql.includes("copies.media_type IN")) {
+      const values = params.slice(
+        paramIndex,
+        paramIndex + countPlaceholders(sql, "copies.media_type IN"),
+      );
+      paramIndex += values.length;
+      rows = rows.filter((copy) => values.includes(copy.media_type));
+    }
+
+    if (sql.includes("copies.condition_media IN")) {
+      const values = params.slice(
+        paramIndex,
+        paramIndex + countPlaceholders(sql, "copies.condition_media IN"),
+      );
+      paramIndex += values.length;
+      rows = rows.filter((copy) => values.includes(copy.condition_media));
+    }
+
+    if (sql.includes("copies.condition_sleeve IN")) {
+      const values = params.slice(
+        paramIndex,
+        paramIndex + countPlaceholders(sql, "copies.condition_sleeve IN"),
+      );
+      paramIndex += values.length;
+      rows = rows.filter((copy) => values.includes(copy.condition_sleeve));
+    }
+
+    if (sql.includes("copies.rating IN")) {
+      const values = params.slice(
+        paramIndex,
+        paramIndex + countPlaceholders(sql, "copies.rating IN"),
+      );
+      paramIndex += values.length;
+      rows = rows.filter((copy) => values.includes(copy.rating));
+    }
+
+    if (sql.includes("copy_tags.tag_id IN")) {
+      const values = params.slice(
+        paramIndex,
+        paramIndex + countPlaceholders(sql, "copy_tags.tag_id IN"),
+      );
+      paramIndex += values.length;
+      rows = rows.filter((copy) =>
+        this.tables.copy_tags.some(
+          (join) => join.copy_id === copy.copy_id && values.includes(join.tag_id),
+        ),
+      );
+    }
+
+    if (sql.includes("crate_copies.crate_id IN")) {
+      const values = params.slice(
+        paramIndex,
+        paramIndex + countPlaceholders(sql, "crate_copies.crate_id IN"),
+      );
+      rows = rows.filter((copy) =>
+        this.tables.crate_copies.some(
+          (join) => join.copy_id === copy.copy_id && values.includes(join.crate_id),
+        ),
+      );
+    }
+
+    if (sql.includes("copies.release_id IS NOT NULL")) {
+      rows = rows.filter((copy) => copy.release_id != null);
+    }
+
+    if (sql.includes("copies.release_id IS NULL")) {
+      rows = rows.filter((copy) => copy.release_id == null);
+    }
+
+    return sortCollectionRows(sql, rows);
+  }
+
+  private tagsForCopy(copyId: string) {
+    const tagIds = this.tables.copy_tags
+      .filter((join) => join.copy_id === copyId)
+      .map((join) => join.tag_id);
+
+    return this.visibleRows("tags").filter((tag) => tagIds.includes(tag.id));
+  }
+
+  private cratesForCopy(copyId: string) {
+    const crateIds = this.tables.crate_copies
+      .filter((join) => join.copy_id === copyId)
+      .map((join) => join.crate_id);
+
+    return this.visibleRows("crates").filter((crate) => crateIds.includes(crate.id));
+  }
 }
 
 function sortByString(key: string, direction: "asc" | "desc" = "asc") {
@@ -527,6 +646,99 @@ function sortByString(key: string, direction: "asc" | "desc" = "asc") {
 
 function sortByNumber(key: string) {
   return (left: Row, right: Row) => Number(left[key]) - Number(right[key]);
+}
+
+function sortCollectionRows(sql: string, rows: Row[]) {
+  if (sql.includes("ORDER BY copies.last_played_at DESC")) {
+    return rows.sort(sortByString("last_played_at", "desc"));
+  }
+
+  if (sql.includes("copies.rating DESC")) {
+    return rows.sort(
+      (left, right) => Number(right.rating) - Number(left.rating) || compareTitle(left, right),
+    );
+  }
+
+  if (sql.includes("year_override, releases.year) DESC")) {
+    return rows.sort(
+      (left, right) => compareYear(left, right, "desc") || compareTitle(left, right),
+    );
+  }
+
+  if (sql.includes("year_override, releases.year) ASC")) {
+    return rows.sort((left, right) => compareYear(left, right, "asc") || compareTitle(left, right));
+  }
+
+  if (sql.includes("ORDER BY LOWER(COALESCE(copies.artist_override")) {
+    return rows.sort((left, right) => compareArtist(left, right) || compareTitle(left, right));
+  }
+
+  if (sql.includes("ORDER BY LOWER(COALESCE(copies.title_override")) {
+    return rows.sort(compareTitle);
+  }
+
+  return rows.sort(
+    (left, right) =>
+      String(right.created_at).localeCompare(String(left.created_at)) ||
+      String(right.acquired_at).localeCompare(String(left.acquired_at)) ||
+      String(right.copy_id).localeCompare(String(left.copy_id)),
+  );
+}
+
+function compareTitle(left: Row, right: Row) {
+  return getDisplayTitle(left).localeCompare(getDisplayTitle(right));
+}
+
+function compareArtist(left: Row, right: Row) {
+  return getDisplayArtist(left).localeCompare(getDisplayArtist(right));
+}
+
+function compareYear(left: Row, right: Row, direction: "asc" | "desc") {
+  const leftYear = getDisplayYear(left);
+  const rightYear = getDisplayYear(right);
+
+  if (leftYear == null && rightYear == null) {
+    return 0;
+  }
+
+  if (leftYear == null) {
+    return 1;
+  }
+
+  if (rightYear == null) {
+    return -1;
+  }
+
+  return direction === "asc" ? leftYear - rightYear : rightYear - leftYear;
+}
+
+function getDisplayTitle(row: Row) {
+  return String(row.title_override ?? row.release_title ?? "").toLocaleLowerCase();
+}
+
+function getDisplayArtist(row: Row) {
+  return String(row.artist_override ?? row.primary_artist_name ?? "").toLocaleLowerCase();
+}
+
+function getDisplayYear(row: Row) {
+  const value = row.year_override ?? row.year;
+
+  return value == null ? null : Number(value);
+}
+
+function countPlaceholders(sql: string, marker: string) {
+  const start = sql.indexOf(marker);
+  const open = sql.indexOf("(", start);
+  const close = sql.indexOf(")", open);
+
+  return sql
+    .slice(open, close)
+    .split("")
+    .filter((character) => character === "?").length;
+}
+
+function unescapeLikePattern(value: string) {
+  return value.replace(/\\([\\%_])/g, "$1").toLocaleLowerCase();
 }
 
 function normalizeJournalType(value: string) {

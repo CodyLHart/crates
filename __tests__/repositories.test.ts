@@ -8,6 +8,7 @@ import {
   deleteTag,
   getCopyWithRelease,
   getCrateWithCopies,
+  listCollectionCopies,
   listCopies,
   listCrates,
   listRecentJournalEntries,
@@ -41,7 +42,7 @@ describe("local SQLite migrations and seed data", () => {
       "SELECT id, copy_id, type, title, body, date, created_at, updated_at, deleted_at FROM journal_entries",
     );
 
-    expect(migrations.map((migration) => migration.id)).toEqual([1, 2, 3, 4, 5]);
+    expect(migrations.map((migration) => migration.id)).toEqual([1, 2, 3, 4, 5, 6]);
     expect(releaseColumns.find((column) => column.name === "year")?.notnull).toBe(0);
     expect(copyColumns.map((column) => column.name)).toEqual(
       expect.arrayContaining(["created_at", "updated_at", "deleted_at"]),
@@ -57,7 +58,7 @@ describe("local SQLite migrations and seed data", () => {
     await runMigrations(database);
     await runMigrations(database);
 
-    expect(database.count("schema_migrations")).toBe(5);
+    expect(database.count("schema_migrations")).toBe(6);
     expect(database.count("releases")).toBe(5);
     expect(database.count("copies")).toBe(5);
     expect(database.count("crates")).toBe(3);
@@ -237,5 +238,140 @@ describe("local repositories", () => {
 
     expect((await listTags()).map((tag) => tag.name)).toContain("Morning");
     expect((await listCrates()).map((crate) => crate.name)).toContain("After Hours");
+  });
+});
+
+describe("collection query repository", () => {
+  let database: InMemoryDatabase;
+
+  beforeEach(() => {
+    database = new InMemoryDatabase();
+    resetDatabaseInitializationForTests();
+    setDatabaseForTests(database);
+  });
+
+  afterEach(() => {
+    resetDatabaseInitializationForTests();
+    resetDatabaseForTests();
+  });
+
+  it("searches titles case-insensitively and trims whitespace", async () => {
+    const results = await listCollectionCopies({ search: "  hOuNdS  " });
+
+    expect(results.map((copy) => copy.id)).toEqual(["copy-hounds-love"]);
+  });
+
+  it("searches linked release artists and copy artist overrides", async () => {
+    const customCopyId = await createCustomCopy({
+      title: "Basement Demos",
+      artist: "Needle Ghosts",
+      mediaType: "Cassette",
+    });
+
+    expect((await listCollectionCopies({ search: "coltrane" })).map((copy) => copy.id)).toEqual([
+      "copy-blue-train",
+    ]);
+    expect((await listCollectionCopies({ search: "needle" })).map((copy) => copy.id)).toEqual([
+      customCopyId,
+    ]);
+  });
+
+  it("searches Tag names through SQLite relationships", async () => {
+    const results = await listCollectionCopies({ search: "gift" });
+
+    expect(results.map((copy) => copy.id)).toEqual(["copy-hounds-love"]);
+  });
+
+  it("searches Crate names through SQLite relationships", async () => {
+    const results = await listCollectionCopies({ search: "floor" });
+
+    expect(results.map((copy) => copy.id)).toEqual(["copy-sign-times", "copy-songs-key-life"]);
+  });
+
+  it("combines filters from different categories using AND behavior", async () => {
+    const results = await listCollectionCopies({
+      filters: {
+        crateIds: ["crate-floor-fillers"],
+        tagIds: ["tag-sample-source"],
+        ratings: [5],
+      },
+    });
+
+    expect(results.map((copy) => copy.id)).toEqual(["copy-songs-key-life"]);
+  });
+
+  it("combines multiple values inside one filter category using OR behavior", async () => {
+    await createCustomCopy({
+      title: "Tape Loop",
+      artist: "Local Shelf",
+      mediaType: "Cassette",
+    });
+    await createCustomCopy({
+      title: "Compact Proof",
+      artist: "Local Shelf",
+      mediaType: "CD",
+    });
+
+    const results = await listCollectionCopies({
+      filters: {
+        mediaTypes: ["Cassette", "CD"],
+      },
+      sort: "title_asc",
+    });
+
+    expect(results.map((copy) => copy.mediaType)).toEqual(["CD", "Cassette"]);
+  });
+
+  it("filters linked and unlinked Copies", async () => {
+    const customCopyId = await createCustomCopy({
+      title: "Hand Dub",
+      artist: "Local Shelf",
+      mediaType: "Cassette",
+    });
+
+    expect(
+      (await listCollectionCopies({ filters: { linkage: "linked" } })).map((copy) => copy.id),
+    ).not.toContain(customCopyId);
+    expect(
+      (await listCollectionCopies({ filters: { linkage: "unlinked" } })).map((copy) => copy.id),
+    ).toEqual([customCopyId]);
+  });
+
+  it.each([
+    ["recently_added", ["copy-music-right-children", "copy-sign-times", "copy-blue-train"]],
+    ["title_asc", ["copy-blue-train", "copy-hounds-love", "copy-music-right-children"]],
+    ["artist_asc", ["copy-music-right-children", "copy-blue-train", "copy-hounds-love"]],
+    ["year_desc", ["copy-music-right-children", "copy-sign-times", "copy-hounds-love"]],
+    ["year_asc", ["copy-blue-train", "copy-songs-key-life", "copy-hounds-love"]],
+    ["rating_desc", ["copy-blue-train", "copy-hounds-love", "copy-sign-times"]],
+  ] as const)("sorts by %s", async (sort, expectedLeadingCopyIds) => {
+    const results = await listCollectionCopies({ sort });
+
+    expect(results.slice(0, 3).map((copy) => copy.id)).toEqual(expectedLeadingCopyIds);
+  });
+
+  it("returns the normal collection for an empty query", async () => {
+    const emptyQueryResults = await listCollectionCopies({ search: "   " });
+    const normalResults = await listCollectionCopies();
+
+    expect(emptyQueryResults.map((copy) => copy.id)).toEqual(normalResults.map((copy) => copy.id));
+  });
+
+  it("returns no results for unmatched searches", async () => {
+    const results = await listCollectionCopies({ search: "no record lives here" });
+
+    expect(results).toHaveLength(0);
+  });
+
+  it("treats SQL LIKE special characters as literal search text", async () => {
+    const copyId = await createCustomCopy({
+      title: "100% Pure _ Demo",
+      artist: "Literal Match",
+      mediaType: "Vinyl",
+    });
+
+    const results = await listCollectionCopies({ search: "100% pure _" });
+
+    expect(results.map((copy) => copy.id)).toEqual([copyId]);
   });
 });

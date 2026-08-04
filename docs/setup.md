@@ -285,8 +285,9 @@ The current project history uses this milestone sequence:
 7. Milestone 7 — Crate management
 8. Milestone 8 — Tag management
 9. Milestone 9 — Local data stabilization
+10. Milestone 10 — Collection search, filter, and sort
 
-Supabase, Discogs, authentication, sync, search/filtering, image upload, and richer Journal UI remain deferred until they are promoted into explicit milestone scopes.
+Supabase, Discogs, authentication, sync, image upload, and richer Journal UI remain deferred until they are promoted into explicit milestone scopes.
 
 ---
 

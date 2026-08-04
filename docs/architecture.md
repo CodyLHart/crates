@@ -73,7 +73,9 @@ Milestone 8 added local Tag management. Tags are managed from Settings, store na
 
 Milestone 9 stabilizes the local data layer. It reconciles milestone documentation, adds isolated repository and migration tests, adds `created_at`, `updated_at`, and `deleted_at` to local user-owned entities, makes unlinked Copy hydration truthful by returning `release: null`, stores canonical Journal Entry type values, and allows nullable release years in SQLite.
 
-Supabase, Discogs, authentication, sync, image upload, search/filtering, and Journal UI expansion remain deferred.
+Milestone 10 adds local Collection search, filter, and sort. Collection queries are represented by a typed `CollectionQuery` model and executed in `src/db/repositories.ts` using parameterized SQLite queries. Search covers Copy title/artist overrides, linked Release title/artist metadata, Tag names, and Crate names. Filters use AND behavior across categories and OR behavior within a category. Sorting defaults to `recently_added`, which orders by local `created_at` first and acquisition date second.
+
+Supabase, Discogs, authentication, sync, image upload, and Journal UI expansion remain deferred.
 
 ### Milestone 9 Local Data Decisions
 
@@ -82,6 +84,10 @@ Supabase, Discogs, authentication, sync, image upload, search/filtering, and Jou
 `sync_status` is not added to every entity yet. The architecture already expects a future `sync_queue`, and a queue is a better first sync primitive because it records operations, payloads, retries, and errors without overloading each table with transient sync state. Entity-level sync metadata can be added later only if the sync implementation proves it needs it.
 
 `deleted_at` is present on user-owned entities for future sync conflict handling, but current Tag deletion remains a hard delete. Without sync, soft-deleting Tags would hide data locally while providing no recovery or cross-device value. When sync arrives, delete behavior should be revisited per entity.
+
+### Milestone 10 Collection Query Decisions
+
+SQLite FTS is not introduced yet. The current milestone needs dependable local search over a modest schema, and parameterized `LIKE` checks plus relationship `EXISTS` clauses are simpler to migrate and test. Targeted indexes support common filters and relationship hydration. FTS should be reconsidered once real collection-size testing shows normal SQLite queries are not fast enough.
 
 ---
 
@@ -613,8 +619,9 @@ The current implemented milestone sequence is:
 7. Milestone 7 — Crate management
 8. Milestone 8 — Tag management
 9. Milestone 9 — Local data stabilization
+10. Milestone 10 — Collection search, filter, and sort
 
-Future milestones should continue from this sequence. The next major architecture work remains authentication, Discogs integration, search/filtering, richer Journal writing, and sync, but those should be promoted into explicit milestone scopes before implementation.
+Future milestones should continue from this sequence. The next major architecture work remains authentication, Discogs integration, richer Journal writing, and sync, but those should be promoted into explicit milestone scopes before implementation.
 
 ---
 

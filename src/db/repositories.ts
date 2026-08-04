@@ -2,7 +2,6 @@ import { initializeDatabase } from "@/db/client";
 import { getDatabase } from "@/db/database";
 import type {
   Copy,
-  CopyWithRelease,
   Crate,
   CrateWithCopies,
   JournalEntry,
@@ -98,6 +97,27 @@ export type SaveTagInput = {
   color: string;
 };
 
+export type CollectionSortMode =
+  "recently_added" | "title_asc" | "artist_asc" | "year_desc" | "year_asc" | "rating_desc";
+
+export type CollectionLinkageFilter = "all" | "linked" | "unlinked";
+
+export type CollectionFilters = {
+  mediaTypes?: string[];
+  conditionMedia?: string[];
+  conditionSleeve?: string[];
+  ratings?: number[];
+  tagIds?: string[];
+  crateIds?: string[];
+  linkage?: CollectionLinkageFilter;
+};
+
+export type CollectionQuery = {
+  search?: string;
+  filters?: CollectionFilters;
+  sort?: CollectionSortMode;
+};
+
 const copySelectSql = `
   SELECT
     copies.id AS copy_id,
@@ -138,6 +158,23 @@ export async function listCopies() {
     WHERE copies.deleted_at IS NULL
     ORDER BY copies.last_played_at DESC
   `);
+
+  return hydrateCopies(rows);
+}
+
+export async function listCollectionCopies(query: CollectionQuery = {}) {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const { whereSql, params } = buildCollectionWhere(query);
+  const orderSql = getCollectionOrderSql(query.sort ?? "recently_added");
+  const rows = await database.getAllAsync<CopyRow>(
+    `
+    ${copySelectSql}
+    ${whereSql}
+    ${orderSql}
+  `,
+    ...params,
+  );
 
   return hydrateCopies(rows);
 }
@@ -514,43 +551,65 @@ export async function updateCopy(copyId: string, input: UpdateCopyInput) {
 }
 
 async function hydrateCopies(rows: CopyRow[]) {
-  const copies: CopyWithRelease[] = [];
+  if (!rows.length) {
+    return [];
+  }
 
-  for (const row of rows) {
+  const copyIds = rows.map((row) => row.copy_id);
+  const [cratesByCopyId, tagsByCopyId, journalEntriesByCopyId] = await Promise.all([
+    listCratesForCopies(copyIds),
+    listTagsForCopies(copyIds),
+    listJournalEntriesForCopies(copyIds),
+  ]);
+
+  return rows.map((row) => {
     const copy = mapCopy(row);
-    const crates = await listCratesForCopy(copy.id);
-    const tags = await listTagsForCopy(copy.id);
+    const crates = cratesByCopyId.get(copy.id) ?? [];
+    const tags = tagsByCopyId.get(copy.id) ?? [];
 
-    copies.push({
+    return {
       ...copy,
       crateIds: crates.map((crate) => crate.id),
       tagIds: tags.map((tag) => tag.id),
       release: mapRelease(row),
       crates,
       tags,
-      journalEntries: await listJournalEntriesForCopy(copy.id),
-    });
-  }
-
-  return copies;
+      journalEntries: journalEntriesByCopyId.get(copy.id) ?? [],
+    };
+  });
 }
 
-async function listCratesForCopy(copyId: string) {
+async function listCratesForCopies(copyIds: string[]) {
+  const cratesByCopyId = new Map<string, Crate[]>();
+
+  if (!copyIds.length) {
+    return cratesByCopyId;
+  }
+
   const database = await getDatabase();
+  const placeholders = getPlaceholders(copyIds);
   const rows = await database.getAllAsync<CrateRow>(
     `
-      SELECT crates.id, crates.name, crates.description, crates.cover_behavior
+      SELECT crates.id, crates.name, crates.description, crates.cover_behavior, crate_copies.copy_id
         , crates.created_at, crates.updated_at, crates.deleted_at
       FROM crates
       INNER JOIN crate_copies ON crate_copies.crate_id = crates.id
-      WHERE crate_copies.copy_id = ?
+      WHERE crate_copies.copy_id IN (${placeholders})
         AND crates.deleted_at IS NULL
-      ORDER BY crate_copies.position ASC
+      ORDER BY crate_copies.copy_id ASC, crate_copies.position ASC
     `,
-    copyId,
+    ...copyIds,
   );
 
-  return rows.map((row) => mapCrate(row, [copyId]));
+  rows.forEach((row) => {
+    const copyId = String((row as CrateRow & { copy_id: string }).copy_id);
+    const crates = cratesByCopyId.get(copyId) ?? [];
+
+    crates.push(mapCrate(row, [copyId]));
+    cratesByCopyId.set(copyId, crates);
+  });
+
+  return cratesByCopyId;
 }
 
 async function replaceCrateCopies(crateId: string, copyIds: string[]) {
@@ -567,38 +626,190 @@ async function replaceCrateCopies(crateId: string, copyIds: string[]) {
   }
 }
 
-async function listTagsForCopy(copyId: string) {
+async function listTagsForCopies(copyIds: string[]) {
+  const tagsByCopyId = new Map<string, Tag[]>();
+
+  if (!copyIds.length) {
+    return tagsByCopyId;
+  }
+
   const database = await getDatabase();
+  const placeholders = getPlaceholders(copyIds);
   const rows = await database.getAllAsync<TagRow>(
     `
-      SELECT tags.id, tags.name, tags.color
+      SELECT tags.id, tags.name, tags.color, copy_tags.copy_id
         , tags.created_at, tags.updated_at, tags.deleted_at
       FROM tags
       INNER JOIN copy_tags ON copy_tags.tag_id = tags.id
-      WHERE copy_tags.copy_id = ?
+      WHERE copy_tags.copy_id IN (${placeholders})
         AND tags.deleted_at IS NULL
-      ORDER BY tags.name ASC
+      ORDER BY copy_tags.copy_id ASC, tags.name ASC
     `,
-    copyId,
+    ...copyIds,
   );
 
-  return rows.map(mapTag);
+  rows.forEach((row) => {
+    const copyId = String((row as TagRow & { copy_id: string }).copy_id);
+    const tags = tagsByCopyId.get(copyId) ?? [];
+
+    tags.push(mapTag(row));
+    tagsByCopyId.set(copyId, tags);
+  });
+
+  return tagsByCopyId;
 }
 
-async function listJournalEntriesForCopy(copyId: string) {
+async function listJournalEntriesForCopies(copyIds: string[]) {
+  const entriesByCopyId = new Map<string, JournalEntry[]>();
+
+  if (!copyIds.length) {
+    return entriesByCopyId;
+  }
+
   const database = await getDatabase();
+  const placeholders = getPlaceholders(copyIds);
   const rows = await database.getAllAsync<JournalEntryRow>(
     `
       SELECT id, copy_id, type, title, body, date, created_at, updated_at, deleted_at
       FROM journal_entries
-      WHERE copy_id = ?
+      WHERE copy_id IN (${placeholders})
         AND deleted_at IS NULL
-      ORDER BY date DESC
+      ORDER BY copy_id ASC, date DESC
     `,
-    copyId,
+    ...copyIds,
   );
 
-  return rows.map(mapJournalEntry);
+  rows.forEach((row) => {
+    const entries = entriesByCopyId.get(row.copy_id) ?? [];
+
+    entries.push(mapJournalEntry(row));
+    entriesByCopyId.set(row.copy_id, entries);
+  });
+
+  return entriesByCopyId;
+}
+
+function buildCollectionWhere(query: CollectionQuery) {
+  const clauses = ["copies.deleted_at IS NULL"];
+  const params: unknown[] = [];
+  const search = query.search?.trim().toLocaleLowerCase();
+  const filters = query.filters ?? {};
+
+  if (search) {
+    const pattern = `%${escapeLikePattern(search)}%`;
+
+    clauses.push(`
+      (
+        LOWER(COALESCE(copies.title_override, '')) LIKE ? ESCAPE '\\'
+        OR LOWER(COALESCE(copies.artist_override, '')) LIKE ? ESCAPE '\\'
+        OR LOWER(COALESCE(releases.title, '')) LIKE ? ESCAPE '\\'
+        OR LOWER(COALESCE(releases.primary_artist_name, '')) LIKE ? ESCAPE '\\'
+        OR EXISTS (
+          SELECT 1
+          FROM copy_tags
+          INNER JOIN tags ON tags.id = copy_tags.tag_id
+          WHERE copy_tags.copy_id = copies.id
+            AND tags.deleted_at IS NULL
+            AND LOWER(tags.name) LIKE ? ESCAPE '\\'
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM crate_copies
+          INNER JOIN crates ON crates.id = crate_copies.crate_id
+          WHERE crate_copies.copy_id = copies.id
+            AND crates.deleted_at IS NULL
+            AND LOWER(crates.name) LIKE ? ESCAPE '\\'
+        )
+      )
+    `);
+    params.push(pattern, pattern, pattern, pattern, pattern, pattern);
+  }
+
+  addInFilter(clauses, params, "copies.media_type", filters.mediaTypes);
+  addInFilter(clauses, params, "copies.condition_media", filters.conditionMedia);
+  addInFilter(clauses, params, "copies.condition_sleeve", filters.conditionSleeve);
+  addInFilter(clauses, params, "copies.rating", filters.ratings);
+
+  if (filters.tagIds?.length) {
+    clauses.push(`
+      EXISTS (
+        SELECT 1
+        FROM copy_tags
+        INNER JOIN tags ON tags.id = copy_tags.tag_id
+        WHERE copy_tags.copy_id = copies.id
+          AND tags.deleted_at IS NULL
+          AND copy_tags.tag_id IN (${getPlaceholders(filters.tagIds)})
+      )
+    `);
+    params.push(...filters.tagIds);
+  }
+
+  if (filters.crateIds?.length) {
+    clauses.push(`
+      EXISTS (
+        SELECT 1
+        FROM crate_copies
+        INNER JOIN crates ON crates.id = crate_copies.crate_id
+        WHERE crate_copies.copy_id = copies.id
+          AND crates.deleted_at IS NULL
+          AND crate_copies.crate_id IN (${getPlaceholders(filters.crateIds)})
+      )
+    `);
+    params.push(...filters.crateIds);
+  }
+
+  if (filters.linkage === "linked") {
+    clauses.push("copies.release_id IS NOT NULL");
+  }
+
+  if (filters.linkage === "unlinked") {
+    clauses.push("copies.release_id IS NULL");
+  }
+
+  return {
+    whereSql: `WHERE ${clauses.join("\nAND ")}`,
+    params,
+  };
+}
+
+function addInFilter(
+  clauses: string[],
+  params: unknown[],
+  column: string,
+  values: (string | number)[] | undefined,
+) {
+  if (!values?.length) {
+    return;
+  }
+
+  clauses.push(`${column} IN (${getPlaceholders(values)})`);
+  params.push(...values);
+}
+
+function getCollectionOrderSql(sort: CollectionSortMode) {
+  switch (sort) {
+    case "title_asc":
+      return "ORDER BY LOWER(COALESCE(copies.title_override, releases.title, '')) ASC, copies.created_at DESC";
+    case "artist_asc":
+      return "ORDER BY LOWER(COALESCE(copies.artist_override, releases.primary_artist_name, '')) ASC, LOWER(COALESCE(copies.title_override, releases.title, '')) ASC";
+    case "year_desc":
+      return "ORDER BY COALESCE(copies.year_override, releases.year) IS NULL ASC, COALESCE(copies.year_override, releases.year) DESC, LOWER(COALESCE(copies.title_override, releases.title, '')) ASC";
+    case "year_asc":
+      return "ORDER BY COALESCE(copies.year_override, releases.year) IS NULL ASC, COALESCE(copies.year_override, releases.year) ASC, LOWER(COALESCE(copies.title_override, releases.title, '')) ASC";
+    case "rating_desc":
+      return "ORDER BY copies.rating DESC, LOWER(COALESCE(copies.title_override, releases.title, '')) ASC";
+    case "recently_added":
+    default:
+      return "ORDER BY copies.created_at DESC, copies.acquired_at DESC, copies.id DESC";
+  }
+}
+
+function getPlaceholders(values: unknown[]) {
+  return values.map(() => "?").join(", ");
+}
+
+function escapeLikePattern(value: string) {
+  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
 }
 
 function mapCopy(row: CopyRow): Copy {
