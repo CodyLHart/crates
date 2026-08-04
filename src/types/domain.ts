@@ -65,7 +65,7 @@ export type JournalEntry = {
   type: JournalEntryType;
   title: string;
   body: string;
-  date: string;
+  occurredAt: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

@@ -1,6 +1,6 @@
 import { Link, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AnimatedAppear } from "@/components/AnimatedAppear";
 import { AppHeader } from "@/components/AppHeader";
@@ -20,6 +20,11 @@ import {
   getCopyTitle,
   getCopyYear,
 } from "@/utils/copyDisplay";
+import {
+  formatJournalTimestamp,
+  getJournalEntryTitle,
+  getJournalEntryTypeLabel,
+} from "@/utils/journalDisplay";
 
 type CopyDetailScreenProps = {
   copyId: string;
@@ -148,14 +153,37 @@ export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
 
       <AnimatedAppear delay={320}>
         <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Journal</Text>
+          <View style={styles.panelHeader}>
+            <Text style={styles.panelTitle}>Journal</Text>
+            <Link
+              href={{
+                pathname: "/journal/new",
+                params: { copyId: copy.id },
+              }}
+              style={styles.inlineLink}
+            >
+              Add Entry
+            </Link>
+          </View>
           {copy.journalEntries.length ? (
             copy.journalEntries.map((entry) => (
-              <View key={entry.id} style={styles.journalEntry}>
-                <Text style={styles.entryType}>{formatJournalEntryType(entry.type)}</Text>
-                <Text style={styles.entryTitle}>{entry.title}</Text>
-                <Text style={styles.body}>{entry.body}</Text>
-              </View>
+              <Link
+                asChild
+                href={{
+                  pathname: "/journal/[id]/edit",
+                  params: { id: entry.id, returnCopyId: copy.id },
+                }}
+                key={entry.id}
+              >
+                <Pressable accessibilityRole="button" style={styles.journalEntry}>
+                  <View style={styles.entryMetaRow}>
+                    <Text style={styles.entryType}>{getJournalEntryTypeLabel(entry.type)}</Text>
+                    <Text style={styles.entryDate}>{formatJournalTimestamp(entry.occurredAt)}</Text>
+                  </View>
+                  <Text style={styles.entryTitle}>{getJournalEntryTitle(entry)}</Text>
+                  <Text style={styles.body}>{entry.body}</Text>
+                </Pressable>
+              </Link>
             ))
           ) : (
             <EmptyState
@@ -167,13 +195,6 @@ export function CopyDetailScreen({ copyId }: CopyDetailScreenProps) {
       </AnimatedAppear>
     </Screen>
   );
-}
-
-function formatJournalEntryType(type: string) {
-  return type
-    .split("_")
-    .map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`)
-    .join(" ");
 }
 
 function Detail({ label, value }: { label: string; value: string }) {
@@ -251,6 +272,17 @@ const styles = StyleSheet.create({
     ...typography.subheading,
     color: colors.cream,
   },
+  panelHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+  },
+  inlineLink: {
+    ...typography.caption,
+    color: colors.ember,
+    textDecorationLine: "underline",
+  },
   detail: {
     backgroundColor: colors.nightSoft,
     borderColor: colors.border,
@@ -286,10 +318,20 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingTop: spacing.md,
   },
+  entryMetaRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+  },
   entryType: {
     ...typography.caption,
     color: colors.ember,
     textTransform: "uppercase",
+  },
+  entryDate: {
+    ...typography.caption,
+    color: colors.inkMuted,
   },
   entryTitle: {
     ...typography.subheading,

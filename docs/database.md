@@ -434,8 +434,12 @@ Entry types may include:
 
 - note
 - memory
-- rating
 - purchase
+- listening_event
+
+Future entry types may include:
+
+- rating
 - maintenance
 - future_ai_insight
 - future_photo

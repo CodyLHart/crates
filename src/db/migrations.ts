@@ -252,6 +252,22 @@ const migrations = [
       CREATE INDEX IF NOT EXISTS idx_journal_entries_copy_id ON journal_entries(copy_id);
     `,
   },
+  {
+    id: 7,
+    name: "add_journal_entry_occurred_at",
+    sql: `
+      ALTER TABLE journal_entries ADD COLUMN occurred_at TEXT NOT NULL DEFAULT '1970-01-01T00:00:00.000Z';
+
+      UPDATE journal_entries
+      SET occurred_at = CASE
+        WHEN date LIKE '%T%' THEN date
+        ELSE date || 'T00:00:00.000Z'
+      END
+      WHERE occurred_at = '1970-01-01T00:00:00.000Z';
+
+      CREATE INDEX IF NOT EXISTS idx_journal_entries_occurred_at ON journal_entries(occurred_at);
+    `,
+  },
 ] as const;
 
 export async function runMigrations(database: LocalDatabase) {

@@ -156,22 +156,24 @@ export async function seedDemoData(database: LocalDatabase) {
             INSERT OR IGNORE INTO journal_entries (
               id,
               copy_id,
-              type,
-            title,
-            body,
-            date,
+            type,
+              title,
+              body,
+              date,
+              occurred_at,
             created_at,
             updated_at,
             deleted_at
           )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `,
           entry.id,
           entry.copyId,
           entry.type,
           entry.title,
           entry.body,
-          entry.date,
+          entry.occurredAt.slice(0, 10),
+          entry.occurredAt,
           entry.createdAt,
           entry.updatedAt,
           entry.deletedAt,

@@ -2,9 +2,11 @@ import { initializeDatabase } from "@/db/client";
 import { getDatabase } from "@/db/database";
 import type {
   Copy,
+  CopyWithRelease,
   Crate,
   CrateWithCopies,
   JournalEntry,
+  JournalEntryType,
   JournalEntryWithCopy,
   Release,
   Tag,
@@ -65,6 +67,7 @@ type JournalEntryRow = {
   title: string;
   body: string;
   date: string;
+  occurred_at: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -95,6 +98,14 @@ export type SaveCrateInput = {
 export type SaveTagInput = {
   name: string;
   color: string;
+};
+
+export type SaveJournalEntryInput = {
+  copyId: string;
+  type: JournalEntryType;
+  title?: string;
+  body: string;
+  occurredAt: string;
 };
 
 export type CollectionSortMode =
@@ -198,6 +209,28 @@ export async function getCopyWithRelease(copyId: string) {
   const [copy] = await hydrateCopies([row]);
 
   return copy;
+}
+
+async function getCopiesByIds(copyIds: string[]) {
+  const uniqueCopyIds = [...new Set(copyIds)];
+
+  if (!uniqueCopyIds.length) {
+    return new Map<string, CopyWithRelease>();
+  }
+
+  const database = await getDatabase();
+  const placeholders = getPlaceholders(uniqueCopyIds);
+  const rows = await database.getAllAsync<CopyRow>(
+    `
+      ${copySelectSql}
+      WHERE copies.id IN (${placeholders})
+        AND copies.deleted_at IS NULL
+    `,
+    ...uniqueCopyIds,
+  );
+  const copies = await hydrateCopies(rows);
+
+  return new Map(copies.map((copy) => [copy.id, copy]));
 }
 
 export async function listCrates() {
@@ -367,31 +400,157 @@ export async function updateCrate(crateId: string, input: SaveCrateInput) {
 }
 
 export async function listRecentJournalEntries(): Promise<JournalEntryWithCopy[]> {
+  return listJournalEntries();
+}
+
+export async function listJournalEntries(): Promise<JournalEntryWithCopy[]> {
   await initializeDatabase();
   const database = await getDatabase();
   const rows = await database.getAllAsync<JournalEntryRow>(`
-    SELECT id, copy_id, type, title, body, date, created_at, updated_at, deleted_at
+    SELECT id, copy_id, type, title, body, date, occurred_at, created_at, updated_at, deleted_at
     FROM journal_entries
     WHERE deleted_at IS NULL
-    ORDER BY date DESC
+    ORDER BY occurred_at DESC, created_at DESC
   `);
+  const copiesById = await getCopiesByIds(rows.map((row) => row.copy_id));
 
-  const entries: JournalEntryWithCopy[] = [];
-
-  for (const row of rows) {
-    const copy = await getCopyWithRelease(row.copy_id);
+  return rows.flatMap((row) => {
+    const copy = copiesById.get(row.copy_id);
 
     if (!copy) {
-      continue;
+      return [];
     }
 
-    entries.push({
+    return {
       ...mapJournalEntry(row),
       copy,
-    });
+    };
+  });
+}
+
+export async function getJournalEntry(
+  journalEntryId: string,
+): Promise<JournalEntryWithCopy | undefined> {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const row = await database.getFirstAsync<JournalEntryRow>(
+    `
+      SELECT id, copy_id, type, title, body, date, occurred_at, created_at, updated_at, deleted_at
+      FROM journal_entries
+      WHERE id = ?
+        AND deleted_at IS NULL
+    `,
+    journalEntryId,
+  );
+
+  if (!row) {
+    return undefined;
   }
 
-  return entries;
+  const copy = await getCopyWithRelease(row.copy_id);
+
+  if (!copy) {
+    return undefined;
+  }
+
+  return {
+    ...mapJournalEntry(row),
+    copy,
+  };
+}
+
+export async function createJournalEntry(input: SaveJournalEntryInput) {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const journalEntryId = createLocalId("journal");
+  const now = new Date().toISOString();
+  const occurredAt = input.occurredAt.trim();
+
+  await database.runAsync(
+    `
+      INSERT INTO journal_entries (
+        id,
+        copy_id,
+        type,
+        title,
+        body,
+        date,
+        occurred_at,
+        created_at,
+        updated_at,
+        deleted_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    journalEntryId,
+    input.copyId,
+    input.type,
+    input.title?.trim() ?? "",
+    input.body.trim(),
+    occurredAt.slice(0, 10),
+    occurredAt,
+    now,
+    now,
+    null,
+  );
+
+  return journalEntryId;
+}
+
+export async function updateJournalEntry(journalEntryId: string, input: SaveJournalEntryInput) {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const now = new Date().toISOString();
+  const occurredAt = input.occurredAt.trim();
+
+  await database.runAsync(
+    `
+      UPDATE journal_entries
+      SET copy_id = ?,
+          type = ?,
+          title = ?,
+          body = ?,
+          date = ?,
+          occurred_at = ?,
+          updated_at = ?
+      WHERE id = ?
+        AND deleted_at IS NULL
+    `,
+    input.copyId,
+    input.type,
+    input.title?.trim() ?? "",
+    input.body.trim(),
+    occurredAt.slice(0, 10),
+    occurredAt,
+    now,
+    journalEntryId,
+  );
+}
+
+export async function softDeleteJournalEntry(journalEntryId: string) {
+  await initializeDatabase();
+  const database = await getDatabase();
+  const now = new Date().toISOString();
+
+  await database.runAsync(
+    `
+      UPDATE journal_entries
+      SET deleted_at = ?,
+          updated_at = ?
+      WHERE id = ?
+        AND deleted_at IS NULL
+    `,
+    now,
+    now,
+    journalEntryId,
+  );
+}
+
+export async function listJournalEntriesForCopy(copyId: string) {
+  await initializeDatabase();
+  const entriesByCopyId = await listJournalEntriesForCopies([copyId]);
+
+  return entriesByCopyId.get(copyId) ?? [];
 }
 
 export async function createCustomCopy(input: CreateCustomCopyInput) {
@@ -472,17 +631,19 @@ export async function createCustomCopy(input: CreateCustomCopyInput) {
             title,
             body,
             date,
+            occurred_at,
             created_at,
             updated_at,
             deleted_at
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         createLocalId("journal"),
         copyId,
         "note",
         "Initial note",
         note,
+        now.slice(0, 10),
         now,
         now,
         now,
@@ -670,11 +831,11 @@ async function listJournalEntriesForCopies(copyIds: string[]) {
   const placeholders = getPlaceholders(copyIds);
   const rows = await database.getAllAsync<JournalEntryRow>(
     `
-      SELECT id, copy_id, type, title, body, date, created_at, updated_at, deleted_at
+      SELECT id, copy_id, type, title, body, date, occurred_at, created_at, updated_at, deleted_at
       FROM journal_entries
       WHERE copy_id IN (${placeholders})
         AND deleted_at IS NULL
-      ORDER BY copy_id ASC, date DESC
+      ORDER BY copy_id ASC, occurred_at DESC, created_at DESC
     `,
     ...copyIds,
   );
@@ -888,7 +1049,7 @@ function mapJournalEntry(row: JournalEntryRow): JournalEntry {
     type: row.type,
     title: row.title,
     body: row.body,
-    date: row.date,
+    occurredAt: row.occurred_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,

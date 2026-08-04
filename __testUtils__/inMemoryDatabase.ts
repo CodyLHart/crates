@@ -123,6 +123,13 @@ export class InMemoryDatabase implements LocalDatabase {
         entry.type = normalizeJournalType(String(entry.type));
       });
     }
+
+    if (sql.includes("ALTER TABLE journal_entries ADD COLUMN occurred_at")) {
+      this.addColumn("journal_entries", "occurred_at", 1);
+      this.tables.journal_entries.forEach((entry) => {
+        entry.occurred_at ??= normalizeOccurredAt(String(entry.date));
+      });
+    }
   }
 
   async getFirstAsync<T>(sql: string, ...params: unknown[]) {
@@ -139,7 +146,17 @@ export class InMemoryDatabase implements LocalDatabase {
     }
 
     if (sql.includes("FROM copies")) {
-      return this.copyRows().find((row) => row.copy_id === params[0]) as T | null;
+      const row = sql.includes("copies.id = ?")
+        ? this.copyRows().find((copy) => copy.copy_id === params[0])
+        : this.copyRows().at(0);
+
+      return row as T | null;
+    }
+
+    if (sql.includes("FROM journal_entries") && sql.includes("WHERE id = ?")) {
+      return this.visibleRows("journal_entries").find(
+        (entry) => entry.id === params[0],
+      ) as T | null;
     }
 
     if (sql.includes("FROM crates")) {
@@ -200,11 +217,11 @@ export class InMemoryDatabase implements LocalDatabase {
     if (sql.includes("FROM journal_entries") && sql.includes("WHERE copy_id")) {
       return this.visibleRows("journal_entries")
         .filter((entry) => params.includes(entry.copy_id))
-        .sort(sortByString("date", "desc")) as T[];
+        .sort(sortByJournalDate) as T[];
     }
 
     if (sql.includes("FROM journal_entries")) {
-      return this.visibleRows("journal_entries").sort(sortByString("date", "desc")) as T[];
+      return this.visibleRows("journal_entries").sort(sortByJournalDate) as T[];
     }
 
     return [];
@@ -323,6 +340,7 @@ export class InMemoryDatabase implements LocalDatabase {
           "title",
           "body",
           "date",
+          ...(sql.includes("occurred_at") ? ["occurred_at"] : []),
           "created_at",
           "updated_at",
           "deleted_at",
@@ -364,6 +382,27 @@ export class InMemoryDatabase implements LocalDatabase {
         condition_sleeve: params[6],
         rating: params[7],
         updated_at: params[8],
+      });
+      return;
+    }
+
+    if (sql.includes("UPDATE journal_entries") && sql.includes("SET copy_id")) {
+      this.updateById("journal_entries", String(params[7]), {
+        copy_id: params[0],
+        type: params[1],
+        title: params[2],
+        body: params[3],
+        date: params[4],
+        occurred_at: params[5],
+        updated_at: params[6],
+      });
+      return;
+    }
+
+    if (sql.includes("UPDATE journal_entries") && sql.includes("SET deleted_at")) {
+      this.updateById("journal_entries", String(params[2]), {
+        deleted_at: params[0],
+        updated_at: params[1],
       });
       return;
     }
@@ -524,6 +563,11 @@ export class InMemoryDatabase implements LocalDatabase {
     let rows = this.copyRows();
     let paramIndex = 0;
 
+    if (sql.includes("copies.id IN")) {
+      rows = rows.filter((copy) => params.includes(copy.copy_id));
+      paramIndex += params.length;
+    }
+
     if (sql.includes("LIKE ? ESCAPE")) {
       const search = unescapeLikePattern(String(params[paramIndex]).slice(1, -1));
       paramIndex += 6;
@@ -648,6 +692,13 @@ function sortByNumber(key: string) {
   return (left: Row, right: Row) => Number(left[key]) - Number(right[key]);
 }
 
+function sortByJournalDate(left: Row, right: Row) {
+  return (
+    String(right.occurred_at ?? right.date).localeCompare(String(left.occurred_at ?? left.date)) ||
+    String(right.created_at).localeCompare(String(left.created_at))
+  );
+}
+
 function sortCollectionRows(sql: string, rows: Row[]) {
   if (sql.includes("ORDER BY copies.last_played_at DESC")) {
     return rows.sort(sortByString("last_played_at", "desc"));
@@ -759,4 +810,8 @@ function normalizeJournalType(value: string) {
   }
 
   return value;
+}
+
+function normalizeOccurredAt(value: string) {
+  return value.includes("T") ? value : `${value}T00:00:00.000Z`;
 }

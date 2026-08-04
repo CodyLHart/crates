@@ -75,7 +75,9 @@ Milestone 9 stabilizes the local data layer. It reconciles milestone documentati
 
 Milestone 10 adds local Collection search, filter, and sort. Collection queries are represented by a typed `CollectionQuery` model and executed in `src/db/repositories.ts` using parameterized SQLite queries. Search covers Copy title/artist overrides, linked Release title/artist metadata, Tag names, and Crate names. Filters use AND behavior across categories and OR behavior within a category. Sorting defaults to `recently_added`, which orders by local `created_at` first and acquisition date second.
 
-Supabase, Discogs, authentication, sync, image upload, and Journal UI expansion remain deferred.
+Milestone 11 adds local Journal creation, editing, and deletion. Journal Entries remain Copy-owned, are stored in SQLite, can be created from Copy Detail or the Journal tab, can be edited through stable IDs, and are removed from normal queries through `deleted_at` soft deletion. The Journal tab now acts as a real local timeline surface ordered by `occurred_at`.
+
+Supabase, Discogs, authentication, sync, image upload, photos, voice memos, AI insights, and automated listening history remain deferred.
 
 ### Milestone 9 Local Data Decisions
 
@@ -88,6 +90,16 @@ Supabase, Discogs, authentication, sync, image upload, and Journal UI expansion 
 ### Milestone 10 Collection Query Decisions
 
 SQLite FTS is not introduced yet. The current milestone needs dependable local search over a modest schema, and parameterized `LIKE` checks plus relationship `EXISTS` clauses are simpler to migrate and test. Targeted indexes support common filters and relationship hydration. FTS should be reconsidered once real collection-size testing shows normal SQLite queries are not fast enough.
+
+### Milestone 11 Journal Decisions
+
+Journal Entries use the canonical lowercase entry types from the domain model: `note`, `memory`, `purchase`, and `listening_event`.
+
+`occurred_at` is the source of truth for Journal chronology. The older local `date` column remains in SQLite for migration compatibility and is populated from `occurred_at` on new writes.
+
+Journal deletion uses `deleted_at` soft deletion because Journal Entries are user-authored history and are likely sync-owned in a future milestone. Soft-deleted entries are excluded from normal list, get, and Copy-specific repository queries.
+
+Track association is deferred. The current local model has no Track table or clean Track ownership semantics, so adding nullable track fields in the UI would create a misleading relationship before the data model can support it well.
 
 ---
 
@@ -620,8 +632,9 @@ The current implemented milestone sequence is:
 8. Milestone 8 — Tag management
 9. Milestone 9 — Local data stabilization
 10. Milestone 10 — Collection search, filter, and sort
+11. Milestone 11 — Journal creation, editing, and deletion
 
-Future milestones should continue from this sequence. The next major architecture work remains authentication, Discogs integration, richer Journal writing, and sync, but those should be promoted into explicit milestone scopes before implementation.
+Future milestones should continue from this sequence. The next major architecture work remains authentication, Discogs integration, richer Journal media, automated listening history, and sync, but those should be promoted into explicit milestone scopes before implementation.
 
 ---
 

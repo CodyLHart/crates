@@ -4,19 +4,26 @@ import { runMigrations } from "@/db/migrations";
 import {
   createCrate,
   createCustomCopy,
+  createJournalEntry,
   createTag,
   deleteTag,
   getCopyWithRelease,
   getCrateWithCopies,
+  getJournalEntry,
   listCollectionCopies,
   listCopies,
   listCrates,
+  listJournalEntries,
+  listJournalEntriesForCopy,
   listRecentJournalEntries,
   listTags,
+  softDeleteJournalEntry,
   updateCopy,
   updateCrate,
+  updateJournalEntry,
   updateTag,
 } from "@/db/repositories";
+import type { JournalEntryType } from "@/types/domain";
 
 import { InMemoryDatabase } from "../__testUtils__/inMemoryDatabase";
 
@@ -39,10 +46,10 @@ describe("local SQLite migrations and seed data", () => {
     );
     const copyColumns = await database.getAllAsync<{ name: string }>("PRAGMA table_info(copies)");
     const journalEntries = await database.getAllAsync<{ type: string }>(
-      "SELECT id, copy_id, type, title, body, date, created_at, updated_at, deleted_at FROM journal_entries",
+      "SELECT id, copy_id, type, title, body, date, occurred_at, created_at, updated_at, deleted_at FROM journal_entries",
     );
 
-    expect(migrations.map((migration) => migration.id)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(migrations.map((migration) => migration.id)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(releaseColumns.find((column) => column.name === "year")?.notnull).toBe(0);
     expect(copyColumns.map((column) => column.name)).toEqual(
       expect.arrayContaining(["created_at", "updated_at", "deleted_at"]),
@@ -58,7 +65,7 @@ describe("local SQLite migrations and seed data", () => {
     await runMigrations(database);
     await runMigrations(database);
 
-    expect(database.count("schema_migrations")).toBe(6);
+    expect(database.count("schema_migrations")).toBe(7);
     expect(database.count("releases")).toBe(5);
     expect(database.count("copies")).toBe(5);
     expect(database.count("crates")).toBe(3);
@@ -66,6 +73,153 @@ describe("local SQLite migrations and seed data", () => {
     expect(database.count("tags")).toBe(5);
     expect(database.count("copy_tags")).toBe(6);
     expect(database.count("journal_entries")).toBe(4);
+  });
+});
+
+describe("journal repositories", () => {
+  let database: InMemoryDatabase;
+
+  beforeEach(() => {
+    database = new InMemoryDatabase();
+    resetDatabaseInitializationForTests();
+    setDatabaseForTests(database);
+  });
+
+  afterEach(() => {
+    resetDatabaseInitializationForTests();
+    resetDatabaseForTests();
+  });
+
+  it.each(["note", "memory", "purchase", "listening_event"] as const)(
+    "creates a %s Journal entry",
+    async (type: JournalEntryType) => {
+      const entryId = await createJournalEntry({
+        copyId: "copy-blue-train",
+        type,
+        title: `A ${type} title`,
+        body: "Stored locally.",
+        occurredAt: "2026-07-10T12:30:00.000Z",
+      });
+
+      const entry = await getJournalEntry(entryId);
+
+      expect(entry?.id).toBe(entryId);
+      expect(entry?.type).toBe(type);
+      expect(entry?.copy.id).toBe("copy-blue-train");
+      expect(entry?.occurredAt).toBe("2026-07-10T12:30:00.000Z");
+    },
+  );
+
+  it("edits an entry while preserving its stable ID", async () => {
+    const entryId = await createJournalEntry({
+      copyId: "copy-blue-train",
+      type: "note",
+      title: "Before",
+      body: "Old body.",
+      occurredAt: "2026-07-10T12:30:00.000Z",
+    });
+
+    await updateJournalEntry(entryId, {
+      copyId: "copy-hounds-love",
+      type: "memory",
+      title: "After",
+      body: "Updated body.",
+      occurredAt: "2026-07-11T09:00:00.000Z",
+    });
+
+    const entry = await getJournalEntry(entryId);
+
+    expect(entry?.id).toBe(entryId);
+    expect(entry?.copyId).toBe("copy-hounds-love");
+    expect(entry?.type).toBe("memory");
+    expect(entry?.title).toBe("After");
+    expect(entry?.body).toBe("Updated body.");
+    expect(entry?.occurredAt).toBe("2026-07-11T09:00:00.000Z");
+  });
+
+  it("soft deletes an entry and excludes it from normal queries", async () => {
+    const entryId = await createJournalEntry({
+      copyId: "copy-blue-train",
+      type: "note",
+      body: "Temporary thought.",
+      occurredAt: "2026-07-10T12:30:00.000Z",
+    });
+
+    await softDeleteJournalEntry(entryId);
+
+    expect(await getJournalEntry(entryId)).toBeUndefined();
+    expect((await listJournalEntries()).map((entry) => entry.id)).not.toContain(entryId);
+    expect(
+      (await listJournalEntriesForCopy("copy-blue-train")).map((entry) => entry.id),
+    ).not.toContain(entryId);
+    expect(
+      database.tables.journal_entries.find((entry) => entry.id === entryId)?.deleted_at,
+    ).toEqual(expect.any(String));
+  });
+
+  it("orders Journal entries by occurred_at newest first", async () => {
+    const olderId = await createJournalEntry({
+      copyId: "copy-blue-train",
+      type: "note",
+      body: "Older",
+      occurredAt: "2026-07-08T10:00:00.000Z",
+    });
+    const newerId = await createJournalEntry({
+      copyId: "copy-blue-train",
+      type: "note",
+      body: "Newer",
+      occurredAt: "2026-07-12T10:00:00.000Z",
+    });
+
+    const entries = await listJournalEntriesForCopy("copy-blue-train");
+
+    expect(entries.map((entry) => entry.id).indexOf(newerId)).toBeLessThan(
+      entries.map((entry) => entry.id).indexOf(olderId),
+    );
+  });
+
+  it("hydrates Journal entries for linked and unlinked Copies", async () => {
+    const customCopyId = await createCustomCopy({
+      title: "Basement Tape",
+      artist: "Local Shelf",
+      mediaType: "Cassette",
+    });
+    const linkedEntryId = await createJournalEntry({
+      copyId: "copy-blue-train",
+      type: "note",
+      body: "Linked Copy entry.",
+      occurredAt: "2026-07-12T10:00:00.000Z",
+    });
+    const unlinkedEntryId = await createJournalEntry({
+      copyId: customCopyId,
+      type: "memory",
+      body: "Unlinked Copy entry.",
+      occurredAt: "2026-07-13T10:00:00.000Z",
+    });
+
+    const entries = await listJournalEntries();
+    const linkedEntry = entries.find((entry) => entry.id === linkedEntryId);
+    const unlinkedEntry = entries.find((entry) => entry.id === unlinkedEntryId);
+
+    expect(linkedEntry?.copy.release?.title).toBe("Blue Train");
+    expect(unlinkedEntry?.copy.release).toBeNull();
+    expect(unlinkedEntry?.copy.titleOverride).toBe("Basement Tape");
+  });
+
+  it("returns hydrated Journal tab entries and copy-specific entries", async () => {
+    const entryId = await createJournalEntry({
+      copyId: "copy-hounds-love",
+      type: "purchase",
+      title: "Shop counter",
+      body: "Found near closing.",
+      occurredAt: "2026-07-14T18:45:00.000Z",
+    });
+
+    const journalEntries = await listJournalEntries();
+    const copyEntries = await listJournalEntriesForCopy("copy-hounds-love");
+
+    expect(journalEntries.find((entry) => entry.id === entryId)?.copy.id).toBe("copy-hounds-love");
+    expect(copyEntries.map((entry) => entry.id)).toContain(entryId);
   });
 });
 

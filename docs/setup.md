@@ -286,8 +286,9 @@ The current project history uses this milestone sequence:
 8. Milestone 8 — Tag management
 9. Milestone 9 — Local data stabilization
 10. Milestone 10 — Collection search, filter, and sort
+11. Milestone 11 — Journal creation, editing, and deletion
 
-Supabase, Discogs, authentication, sync, image upload, and richer Journal UI remain deferred until they are promoted into explicit milestone scopes.
+Supabase, Discogs, authentication, sync, image upload, photos, voice memos, AI insights, and automated listening history remain deferred until they are promoted into explicit milestone scopes.
 
 ---
 

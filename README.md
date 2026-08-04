@@ -92,6 +92,14 @@ Milestone 10 adds local Collection search, filter, and sort:
 - Sort defaults to recently added, with title, artist, year, and rating options
 - Normal SQLite queries and targeted indexes are used; FTS remains deferred until collection scale proves it necessary
 
+Milestone 11 adds local Journal creation, editing, and deletion:
+
+- Journal entries can be created from Copy Detail or the Journal tab
+- The Journal tab now lists SQLite-backed entries in reverse chronological order
+- Existing entries can be opened, edited, and soft-deleted after confirmation
+- Journal repositories support list, get, create, update, soft delete, and Copy-specific queries
+- Journal timing uses `occurred_at`; the legacy `date` column remains for local migration compatibility
+
 Supabase, Discogs, authentication, sync, image upload, and cloud product features are intentionally deferred to later milestones.
 
 ---

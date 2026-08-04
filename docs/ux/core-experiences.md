@@ -137,9 +137,10 @@ The Journal transforms a collection into a living story.
 
 - Notes
 - Memories
-- Ratings
 - Purchase Events
 - Listening Events
+
+Milestone 11 supports creating, editing, and deleting local Journal Entries for notes, memories, purchases, and listening events. Ratings remain Copy fields rather than standalone Journal Entry creation UI.
 
 ## Future Journal Entries
 
